@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from backend.core.config import settings
-from backend.routers import (
+from core.config import settings
+from routers import (
     routes,          # your existing main routes
     wishlist,        # new feature
     reviews,         # new feature
@@ -10,8 +10,8 @@ from backend.routers import (
     admin_reports,   # new feature
     metadata
 )
-from backend.db.database import create_tables
-from backend.model import tables  # ensure models are imported before create_tables()
+from db.database import create_tables
+from model import tables  # ensure models are imported before create_tables()
 
 app = FastAPI(
     title="Fashion Store API",
@@ -50,4 +50,4 @@ def root():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("backend.main:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
