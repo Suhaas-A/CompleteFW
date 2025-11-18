@@ -2,7 +2,7 @@
 import axios from "axios";
 
 const axiosInstance = axios.create({
-  baseURL: "http://127.0.0.1:8000/api", // change if deployed
+  baseURL: "https://complete-fw.vercel.app/api", // change if deployed
 });
 
 // Automatically attach JWT token
@@ -13,3 +13,4 @@ axiosInstance.interceptors.request.use((config) => {
 });
 
 export default axiosInstance;
+
