@@ -4,9 +4,9 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func
 from typing import Dict
 
-from backend.db.database import get_db
-from backend.model.tables import Orders, ProductOrder, Products
-from backend.routers.utils import admin_required
+from db.database import get_db
+from model.tables import Orders, ProductOrder, Products
+from routers.utils import admin_required
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -32,3 +32,4 @@ def sales_summary(db: Session = Depends(get_db), _ = Depends(admin_required)) ->
     )
 
     return {"top_products": top_products, "total_revenue": float(revenue)}
+
