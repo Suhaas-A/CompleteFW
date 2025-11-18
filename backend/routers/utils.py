@@ -1,17 +1,17 @@
 # backend/routers/utils.py
 from fastapi import Depends, HTTPException, status
-from backend.db.database import get_db
-from backend.model.tables import Users
+from db.database import get_db
+from model.tables import Users
 from typing import Any
 from fastapi.security import OAuth2PasswordBearer
 from jose import jwt
-from backend.core.config import settings
+from core.config import settings
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/login")
 
 def get_current_user(token: str = Depends(oauth2_scheme), db=Depends(get_db)) -> Users:
     from jose import JWTError
-    from backend.schemas.data import TokenData
+    from schemas.data import TokenData
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
         username = payload.get("sub")
@@ -31,3 +31,4 @@ def admin_required(current_user: Users = Depends(get_current_active_user)) -> Us
     if not getattr(current_user, "admin", False):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized")
     return current_user
+
