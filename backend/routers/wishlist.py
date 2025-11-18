@@ -3,9 +3,9 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
 
-from backend.db.database import get_db
-from backend.model.tables import Wishlist, Products, Users
-from backend.routers.routes import get_current_active_user
+from db.database import get_db
+from model.tables import Wishlist, Products, Users
+from routers.routes import get_current_active_user
 
 router = APIRouter(prefix="/wishlist", tags=["Wishlist"])
 
@@ -72,3 +72,4 @@ def remove_from_wishlist(product_id: int, db: Session = Depends(get_db), current
     db.delete(entry)
     db.commit()
     return {"message": "Removed from wishlist"}
+
