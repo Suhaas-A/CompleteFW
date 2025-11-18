@@ -2,11 +2,11 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from backend.db.database import get_db
-from backend.model.tables import Orders, Payment
-from backend.schemas.data import PaymentIntentCreate, PaymentConfirm
-from backend.routers.utils import get_current_active_user
-from backend.core.config import settings
+from db.database import get_db
+from model.tables import Orders, Payment
+from schemas.data import PaymentIntentCreate, PaymentConfirm
+from routers.utils import get_current_active_user
+from core.config import settings
 
 router = APIRouter(prefix="/payments", tags=["payments"])
 
@@ -49,3 +49,4 @@ def confirm_payment(payload: PaymentConfirm, db: Session = Depends(get_db)):
             db.commit()
 
     return {"message": "Payment updated", "status": payment.status}
+
