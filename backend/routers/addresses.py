@@ -3,10 +3,10 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
 
-from backend.db.database import get_db
-from backend.model.tables import Address, Users
-from backend.schemas.data import AddressCreate, AddressOut
-from backend.routers.utils import get_current_active_user
+from db.database import get_db
+from model.tables import Address, Users
+from schemas.data import AddressCreate, AddressOut
+from routers.utils import get_current_active_user
 
 router = APIRouter(prefix="/addresses", tags=["addresses"])
 
@@ -34,3 +34,4 @@ def delete_address(address_id: int, db: Session = Depends(get_db), current_user:
     db.delete(addr)
     db.commit()
     return {"message": "Address deleted"}
+
