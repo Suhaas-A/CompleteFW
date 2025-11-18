@@ -1,9 +1,9 @@
 # backend/routers/metadata_routes.py
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from backend.db.database import get_db
-from backend.model import tables
-from backend.schemas import data as schemas
+from db.database import get_db
+from model import tables
+from schemas import data as schemas
 
 router = APIRouter(prefix="/api", tags=["Metadata"])
 
@@ -141,3 +141,4 @@ def post_coupon(coupon: schemas.CouponBase, db: Session = Depends(get_db)):
 @router.get("/coupons")
 def get_coupons(db: Session = Depends(get_db)):
     return db.query(tables.Coupons).all()
+
