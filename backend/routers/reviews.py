@@ -3,10 +3,10 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
 
-from backend.db.database import get_db
-from backend.model.tables import Review, Products, Users
-from backend.schemas.data import ReviewCreate, ReviewOut
-from backend.routers.utils import get_current_active_user
+from db.database import get_db
+from model.tables import Review, Products, Users
+from schemas.data import ReviewCreate, ReviewOut
+from routers.utils import get_current_active_user
 
 router = APIRouter(prefix="/reviews", tags=["reviews"])
 
@@ -45,3 +45,4 @@ def product_review_summary(product_id: int, db: Session = Depends(get_db)):
         return {"average_rating": None, "count": 0}
     avg = sum(r.rating for r in data)/len(data)
     return {"average_rating": round(avg, 2), "count": len(data)}
+
