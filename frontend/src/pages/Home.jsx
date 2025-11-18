@@ -16,8 +16,8 @@ export default function Home() {
     async function loadData() {
       try {
         const [catRes, prodRes] = await Promise.all([
-          axios.get("https://backend-fw-tau.vercel.app/api/categories", header),
-          axios.get("https://backend-fw-tau.vercel.app/api/products", header),
+          axios.get("https://complete-fw.vercel.app/api/categories", header),
+          axios.get("https://complete-fw.vercel.app/api/all_products", header),
         ]);
         setCategories(catRes.data);
         setFeatured(prodRes.data.slice(0, 8));
@@ -206,3 +206,4 @@ export default function Home() {
     </div>
   );
 }
+
