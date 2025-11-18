@@ -22,6 +22,7 @@ def get_db():
         db.close()
 
 def create_tables():
-    from backend.model import tables
+    from model import tables
     Base.metadata.create_all(bind=engine)
+
 
