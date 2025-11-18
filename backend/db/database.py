@@ -1,6 +1,6 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
-from backend.core.config import settings
+from core.config import settings
 from sqlalchemy.pool import NullPool
 
 engine = create_engine(
@@ -24,3 +24,4 @@ def get_db():
 def create_tables():
     from backend.model import tables
     Base.metadata.create_all(bind=engine)
+
