@@ -1,5 +1,5 @@
 """
-Main API routes for the Fashion Store backend.
+Main API routes for the Fashion Store 
 
 Handles:
 - User authentication and registration
@@ -20,10 +20,10 @@ from sqlalchemy.orm import Session
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 
-from backend.db.database import get_db
-from backend.model import tables
-from backend.schemas import data
-from backend.core.config import settings
+from db.database import get_db
+from model import tables
+from schemas import data
+from core.config import settings
 
 router = APIRouter()
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -349,3 +349,4 @@ def get_order_details(order_id: int, db: Session = Depends(get_db), current_user
             })
 
     return {"order": order, "products": product_data}
+
