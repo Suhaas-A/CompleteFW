@@ -36,7 +36,7 @@ export default function AdminProductForm() {
   });
 
   const navigate = useNavigate();
-  const API_URL = "http://127.0.0.1:8000/api";
+  const API_URL = "https://complete-fw.vercel.app/api";
   const token = localStorage.getItem("access_token");
 
   // ✅ Fetch metadata for dropdowns
@@ -239,3 +239,4 @@ export default function AdminProductForm() {
     </AdminLayout>
   );
 }
+
