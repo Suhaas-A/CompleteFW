@@ -31,8 +31,8 @@ export default function Home() {
     async function loadData() {
       try {
         const [catRes, prodRes] = await Promise.all([
-          axios.get("http://127.0.0.1:8000/api/categories", header),
-          axios.get("http://127.0.0.1:8000/api/all_products", header),
+          axios.get("https://complete-fw.vercel.app/api/categories", header),
+          axios.get("https://complete-fw.vercel.app/api/all_products", header),
         ]);
         setCategories(catRes.data);
         setFeatured(prodRes.data.slice(0, 8));
@@ -324,3 +324,4 @@ export default function Home() {
     </div>
   );
 }
+
