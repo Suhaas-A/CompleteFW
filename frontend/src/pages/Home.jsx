@@ -1,10 +1,23 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
+import { useAuthContext } from "../contexts/AuthContext";
 
 export default function Home() {
   const [categories, setCategories] = useState([]);
   const [featured, setFeatured] = useState([]);
+  const [dashboard, setDashboard] = useState(null);
+
+  const { user } = useAuthContext();
+
+  // Detect admin
+  const isAdmin =
+    user?.admin ||
+    user?.is_admin ||
+    user?.isAdmin ||
+    user?.role === "admin" ||
+    user?.is_superuser ||
+    user?.is_staff;
 
   const header = {
     headers: {
@@ -12,12 +25,14 @@ export default function Home() {
     },
   };
 
+  // Load normal user home content
   useEffect(() => {
+    if (isAdmin) return;
     async function loadData() {
       try {
         const [catRes, prodRes] = await Promise.all([
-          axios.get("https://complete-fw.vercel.app/api/categories", header),
-          axios.get("https://complete-fw.vercel.app/api/all_products", header),
+          axios.get("http://127.0.0.1:8000/api/categories", header),
+          axios.get("http://127.0.0.1:8000/api/all_products", header),
         ]);
         setCategories(catRes.data);
         setFeatured(prodRes.data.slice(0, 8));
@@ -26,8 +41,111 @@ export default function Home() {
       }
     }
     loadData();
-  }, []);
+  }, [isAdmin]);
 
+  // Load admin dashboard content
+  useEffect(() => {
+    if (!isAdmin) return;
+    async function loadAdminDashboard() {
+      try {
+        const { data } = await axios.get(
+          "http://127.0.0.1:8000/api/admin/sales-summary",
+          header
+        );
+        setDashboard(data);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    loadAdminDashboard();
+  }, [isAdmin]);
+
+  /* ============================================================
+     🚀 ADMIN HOME PAGE — Admin sees ONLY this section
+     ============================================================ */
+  if (isAdmin) {
+    return (
+      <div className="bg-[#F9F9F7] min-h-screen px-6 md:px-12 py-12 text-[#3A3A3A]">
+        <h1 className="text-4xl font-serif font-bold text-[#8C6B1F] mb-10">
+          Admin Dashboard Overview
+        </h1>
+
+        {/* Dashboard Stat Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-12">
+          {/* Revenue */}
+          <div className="p-6 rounded-xl bg-gradient-to-r from-[#C9A227] to-[#8C6B1F] text-white shadow-lg">
+            <p className="text-sm uppercase opacity-80">Total Revenue</p>
+            <h3 className="text-4xl font-bold mt-1">
+              ₹{Number(dashboard?.total_revenue || 0).toLocaleString()}
+            </h3>
+          </div>
+
+          {/* Top Product */}
+          <div className="p-6 rounded-xl bg-gradient-to-r from-[#EEDC82] to-[#C9A227] text-[#3A3A3A] shadow-lg">
+            <p className="text-sm uppercase opacity-80">Top Product</p>
+            <h3 className="text-xl font-semibold mt-1">
+              {dashboard?.top_products?.[0]
+                ? `#${dashboard.top_products[0].product_id}`
+                : "—"}
+            </h3>
+          </div>
+
+          {/* Total Items Sold */}
+          <div className="p-6 rounded-xl bg-gradient-to-r from-[#FFF7DA] to-[#EAD38B] shadow-lg">
+            <p className="text-sm uppercase opacity-80">Items Sold</p>
+            <h3 className="text-4xl font-bold mt-1">
+              {dashboard?.top_products?.reduce(
+                (sum, p) => sum + p.quantity_sold,
+                0
+              ) || 0}
+            </h3>
+          </div>
+        </div>
+
+        {/* Top-selling table */}
+        <div className="bg-white p-6 rounded-2xl shadow border">
+          <h3 className="text-xl font-semibold mb-4 border-b pb-2">
+            Top Selling Products
+          </h3>
+
+          {dashboard?.top_products?.length > 0 ? (
+            <table className="w-full border-collapse text-left">
+              <thead>
+                <tr>
+                  <th className="py-2 px-2">Product ID</th>
+                  <th className="py-2 px-2">Quantity Sold</th>
+                </tr>
+              </thead>
+              <tbody>
+                {dashboard.top_products.map((p) => (
+                  <tr key={p.product_id} className="border-t">
+                    <td className="py-2 px-2">#{p.product_id}</td>
+                    <td className="py-2 px-2">{p.quantity_sold}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <p className="text-gray-500 py-4 text-center">No sales data</p>
+          )}
+        </div>
+
+        {/* Button to full admin panel */}
+        <div className="text-center mt-10">
+          <Link
+            to="/admin"
+            className="bg-gradient-to-r from-[#C9A227] to-[#8C6B1F] text-white px-6 py-3 rounded-lg shadow hover:scale-105 transition"
+          >
+            Go to Full Dashboard →
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  /* ============================================================
+     🌟 USER HOME PAGE — EXACTLY YOUR ORIGINAL CODE (UNCHANGED)
+     ============================================================ */
   return (
     <div className="bg-[#F9F9F7] text-[#2E2E2E] font-sans overflow-x-hidden">
       {/* 🔥 Hero Section */}
@@ -168,7 +286,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 🧑‍💼 Meet the Founder (No image) */}
+      {/* 🧑‍💼 Meet the Founder */}
       <section className="py-20 bg-[#FFFDF5] text-center border-t border-[#E8D9A6]">
         <div className="max-w-3xl mx-auto px-6 space-y-6">
           <h2 className="text-4xl font-serif font-bold text-[#8C6B1F] mb-4">
@@ -206,4 +324,3 @@ export default function Home() {
     </div>
   );
 }
-
