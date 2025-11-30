@@ -1,9 +1,10 @@
 // src/App.jsx
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Navbar from "./components/layout/NavBar";
+import Navbar from "./components/layout/Navbar";
 import Footer from "./components/layout/Footer";
 import ProtectedRoute from "./components/layout/ProtectedRoute";
 import AdminProtectedRoute from "./components/layout/AdminProtectedRoute";
+import UserProtectedRoute from "./components/layout/UserProtectedRoute";
 
 // 🧩 User Pages
 import Home from "./pages/Home";
@@ -24,6 +25,8 @@ import AdminProducts from "./pages/AdminProducts";
 import AdminProductForm from "./pages/AdminProductForm";
 import AdminCategories from "./pages/AdminCategories";
 import AdminReports from "./pages/AdminReports";
+import AdminOrders from "./pages/AdminOrders";
+import AdminOrderTimeline from "./pages/AdminOrderTimeline";
 
 export default function App() {
   return (
@@ -46,49 +49,49 @@ export default function App() {
             <Route
               path="/cart"
               element={
-                <ProtectedRoute>
+                <UserProtectedRoute>
                   <Cart />
-                </ProtectedRoute>
+                </UserProtectedRoute>
               }
             />
             <Route
               path="/checkout"
               element={
-                <ProtectedRoute>
+                <UserProtectedRoute>
                   <Checkout />
-                </ProtectedRoute>
+                </UserProtectedRoute>
               }
             />
             <Route
               path="/orders"
               element={
-                <ProtectedRoute>
+                <UserProtectedRoute>
                   <Orders />
-                </ProtectedRoute>
+                </UserProtectedRoute>
               }
             />
             <Route 
               path="/orders/:id"
               element={
-                <ProtectedRoute>
+                <UserProtectedRoute>
                   <OrderDetails />
-                </ProtectedRoute>
+                </UserProtectedRoute>
               } 
             />
             <Route
               path="/wishlist"
               element={
-                <ProtectedRoute>
+                <UserProtectedRoute>
                   <Wishlist />
-                </ProtectedRoute>
+                </UserProtectedRoute>
               }
             />
             <Route
               path="/profile"
               element={
-                <ProtectedRoute>
+                <UserProtectedRoute>
                   <Profile />
-                </ProtectedRoute>
+                </UserProtectedRoute>
               }
             />
 
@@ -138,6 +141,23 @@ export default function App() {
               element={
                 <AdminProtectedRoute>
                   <AdminReports />
+                </AdminProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/orders"
+              element={
+                <AdminProtectedRoute>
+                  <AdminOrders />
+                </AdminProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/admin/order/:id/timeline"
+              element={
+                <AdminProtectedRoute>
+                  <AdminOrderTimeline />
                 </AdminProtectedRoute>
               }
             />
