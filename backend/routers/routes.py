@@ -1,11 +1,12 @@
 """
-Main API routes for the Fashion Store 
+Main API routes for the Fashion Store backend.
 
 Handles:
 - User authentication and registration
 - Product management (admin)
 - Cart operations
 - Order creation and retrieval
+- Order status tracking (history/timeline)
 """
 
 from datetime import datetime, timedelta
@@ -313,8 +314,22 @@ def create_order(order: data.Order, db: Session = Depends(get_db), current_user=
 
     # Clear cart after order
     cart = db.query(tables.Carts).filter(tables.Carts.user_id == current_user.id).first()
-    db.query(tables.ProductCart).filter(tables.ProductCart.cart_id == cart.id).delete()
-    db.commit()
+    if cart:
+        db.query(tables.ProductCart).filter(tables.ProductCart.cart_id == cart.id).delete()
+        db.commit()
+
+    # Add initial status history entry
+    try:
+        db.add(tables.OrderStatusHistory(
+            order_id=new_order.id,
+            status="Pending",
+            note="Order created",
+            changed_by_user_id=current_user.id
+        ))
+        db.commit()
+    except Exception:
+        # don't fail entire order if history insert fails; log if you have logger
+        db.rollback()
 
     return {"message": "Order created successfully", "order_id": new_order.id}
 
@@ -349,4 +364,115 @@ def get_order_details(order_id: int, db: Session = Depends(get_db), current_user
             })
 
     return {"order": order, "products": product_data}
+
+
+# ---------------------- Order Status: update & timeline -------------------- #
+
+@router.post("/order/{order_id}/status", tags=["orders"])
+def update_order_status(
+    order_id: int,
+    payload: data.OrderStatusHistoryCreate,
+    db: Session = Depends(get_db),
+    admin_user: tables.Users = Depends(admin_required)
+):
+    order = db.query(tables.Orders).filter(tables.Orders.id == order_id).first()
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+
+    # Basic validation of status value (you can expand this)
+    VALID_STATUSES = {
+        "Pending", "Confirmed", "Packed", "Shipped",
+        "Out for Delivery", "Delivered", "Cancelled", "Returned", "Refunded"
+    }
+    if payload.status not in VALID_STATUSES:
+        raise HTTPException(status_code=400, detail="Invalid status value")
+
+    # update order table
+    order.status = payload.status
+    db.commit()
+    db.refresh(order)
+
+    # add history entry
+    try:
+        history = tables.OrderStatusHistory(
+            order_id=order_id,
+            status=payload.status,
+            note=payload.note,
+            changed_by_user_id=admin_user.id
+        )
+        db.add(history)
+        db.commit()
+        db.refresh(history)
+    except Exception:
+        db.rollback()
+        raise HTTPException(status_code=500, detail="Failed to write status history")
+
+    return {"message": "Order status updated", "history": history}
+
+
+@router.get("/order/{order_id}/status-history", tags=["orders"])
+def get_order_status_history(
+    order_id: int,
+    db: Session = Depends(get_db),
+    current_user: tables.Users = Depends(get_current_active_user)
+):
+    order = db.query(tables.Orders).filter(tables.Orders.id == order_id).first()
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+
+    # Users can only view their own orders; Admins can view all
+    if not current_user.admin and order.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Unauthorized")
+
+    history = (
+        db.query(tables.OrderStatusHistory)
+        .filter(tables.OrderStatusHistory.order_id == order_id)
+        .order_by(tables.OrderStatusHistory.created_at.asc())
+        .all()
+    )
+
+    return {
+        "order_id": order_id,
+        "current_status": order.status,
+        "history": history,
+    }
+
+# --------------------------- ADMIN: GET ALL ORDERS --------------------------- #
+
+@router.get("/admin/all_orders", tags=["admin"])
+def admin_get_all_orders(
+    db: Session = Depends(get_db),
+    current_user: tables.Users = Depends(admin_required)
+):
+    """
+    Admin can view ALL orders from all users.
+    Includes user details for dashboard.
+    """
+    orders = (
+        db.query(tables.Orders)
+        .order_by(tables.Orders.created_at.desc())
+        .all()
+    )
+
+    result = []
+
+    for order in orders:
+        user = (
+            db.query(tables.Users)
+            .filter(tables.Users.id == order.user_id)
+            .first()
+        )
+
+        result.append({
+            "id": order.id,
+            "user_id": order.user_id,
+            "username": user.username if user else "Unknown",
+            "email": user.email if user else None,
+            "delivery_address": order.delivery_address,
+            "status": order.status,
+            "delivery_link": order.delivery_link,
+            "created_at": order.created_at
+        })
+
+    return result
 
