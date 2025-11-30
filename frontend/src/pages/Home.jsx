@@ -49,7 +49,7 @@ export default function Home() {
     async function loadAdminDashboard() {
       try {
         const { data } = await axios.get(
-          "http://127.0.0.1:8000/api/admin/sales-summary",
+          "https://complete-fw.vercel.app/api/admin/sales-summary",
           header
         );
         setDashboard(data);
@@ -324,4 +324,5 @@ export default function Home() {
     </div>
   );
 }
+
 
