@@ -277,3 +277,37 @@ class DiscountBase(BaseModel):
 class CouponBase(BaseModel):
     name: str
     offer: str
+
+# -------------------------- Order Status History -------------------------- #
+
+class OrderStatusHistoryCreate(BaseModel):
+    """Used when admin/user updates order status."""
+    status: str
+    note: Optional[str] = None
+
+    class Config:
+        orm_mode = True
+
+
+class OrderStatusHistoryOut(BaseModel):
+    """Single history entry returned to frontend."""
+    id: int
+    order_id: int
+    status: str
+    note: Optional[str]
+    changed_by_user_id: Optional[int]
+    created_at: datetime
+
+    class Config:
+        orm_mode = True
+
+
+class OrderStatusTimelineOut(BaseModel):
+    """Returned when viewing order details with status timeline."""
+    order_id: int
+    current_status: str
+    history: List[OrderStatusHistoryOut]
+
+    class Config:
+        orm_mode = True
+
