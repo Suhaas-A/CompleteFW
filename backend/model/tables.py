@@ -1,7 +1,6 @@
 """
 SQLAlchemy models for the Fashion Store backend.
-
-Defines all database tables (existing + new models).
+Enhanced with OrderStatusHistory tracking.
 Target: Python 3.11
 """
 
@@ -43,6 +42,13 @@ class Users(Base):
     reviews = relationship("Review", back_populates="user", cascade="all,delete-orphan")
     addresses = relationship("Address", back_populates="user", cascade="all,delete-orphan")
     refresh_tokens = relationship("RefreshToken", back_populates="user", cascade="all,delete-orphan")
+
+    # NEW → track which admin/user changed status
+    status_changes = relationship(
+        "OrderStatusHistory",
+        back_populates="changed_by_user",
+        foreign_keys="OrderStatusHistory.changed_by_user_id"
+    )
 
     def __repr__(self):
         return f"<User id={self.id} username={self.username}>"
@@ -179,7 +185,7 @@ class Orders(Base):
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     delivery_address = Column(Text)
-    status = Column(String(64), nullable=False, default="Pending")
+    status = Column(String(64), nullable=False, default="Pending")  # keep original
     delivery_link = Column(String(1024))
     created_at = Column(DateTime, default=datetime.utcnow)
 
@@ -187,6 +193,14 @@ class Orders(Base):
     items = relationship("ProductOrder", back_populates="order", cascade="all,delete-orphan")
     payments = relationship("Payment", back_populates="order", cascade="all,delete-orphan")
     invoices = relationship("Invoice", back_populates="order", cascade="all,delete-orphan")
+
+    # NEW: timeline history
+    status_history = relationship(
+        "OrderStatusHistory",
+        back_populates="order",
+        cascade="all, delete-orphan",
+        order_by="OrderStatusHistory.created_at"
+    )
 
 
 class ProductOrder(Base):
@@ -202,7 +216,25 @@ class ProductOrder(Base):
     product = relationship("Products", back_populates="order_items")
 
 
-# ----------------------------- New Models ------------------------------- #
+# ----------------------------- NEW: Status History ------------------------------ #
+
+class OrderStatusHistory(Base):
+    __tablename__ = "order_status_history"
+
+    id = Column(Integer, primary_key=True)
+    order_id = Column(Integer, ForeignKey("orders.id"), nullable=False, index=True)
+    status = Column(String(64), nullable=False)
+    note = Column(Text, nullable=True)
+
+    changed_by_user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    order = relationship("Orders", back_populates="status_history")
+    changed_by_user = relationship("Users", back_populates="status_changes")
+
+
+# ----------------------------- Wishlist / Review ------------------------------ #
 
 class Wishlist(Base):
     __tablename__ = "wishlists"
@@ -227,6 +259,8 @@ class Review(Base):
     user = relationship("Users", back_populates="reviews")
     product = relationship("Products", back_populates="reviews")
 
+
+# ----------------------------- Address / Payment / Invoice ------------------------------ #
 
 class Address(Base):
     __tablename__ = "addresses"
