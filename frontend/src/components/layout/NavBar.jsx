@@ -26,69 +26,54 @@ export default function Navbar() {
   };
 
   /* ============================================================
-     🚀 ADMIN NAVBAR — Admins will ONLY see this
+     🚀 ADMIN NAVBAR — UI ONLY UPDATED
      ============================================================ */
   if (isAdmin) {
     return (
-      <nav className="bg-gradient-to-r from-[#8C6B1F] to-[#5E4714] text-white shadow-md sticky top-0 z-50">
+      <nav className="bg-[#0F1012] text-white border-b border-[rgba(212,175,55,0.25)] sticky top-0 z-50">
         <div className="max-w-7xl mx-auto flex justify-between items-center px-6 md:px-10 py-4">
 
           {/* Brand */}
           <Link
             to="/admin"
-            className="text-3xl font-serif font-bold tracking-wide hover:scale-105 transition-transform duration-200"
+            className="text-3xl font-serif font-bold tracking-wide text-[#D4AF37] hover:opacity-90 transition"
           >
             Eleganza Admin
           </Link>
 
           {/* Admin Links */}
-          <div className="hidden md:flex items-center gap-6 text-sm font-medium">
+          <div className="hidden md:flex items-center gap-6 text-sm font-medium text-[#A1A1AA]">
 
-            <Link
-              to="/admin"
-              className="hover:text-[#FDF6E3] hover:underline underline-offset-4 transition duration-200"
-            >
+            <Link to="/admin" className="hover:text-[#D4AF37] transition">
               Dashboard
             </Link>
 
-            <Link
-              to="/admin/products"
-              className="hover:text-[#FDF6E3] hover:underline underline-offset-4 transition duration-200"
-            >
+            <Link to="/admin/products" className="hover:text-[#D4AF37] transition">
               Products
             </Link>
 
-            <Link
-              to="/admin/categories"
-              className="hover:text-[#FDF6E3] hover:underline underline-offset-4 transition duration-200"
-            >
+            <Link to="/admin/categories" className="hover:text-[#D4AF37] transition">
               Categories
             </Link>
 
-            <Link
-              to="/admin/orders"
-              className="hover:text-[#FDF6E3] hover:underline underline-offset-4 transition duration-200"
-            >
+            <Link to="/admin/orders" className="hover:text-[#D4AF37] transition">
               Orders
             </Link>
 
-            <Link
-              to="/admin/reports"
-              className="hover:text-[#FDF6E3] hover:underline underline-offset-4 transition duration-200"
-            >
+            <Link to="/admin/reports" className="hover:text-[#D4AF37] transition">
               Reports
             </Link>
           </div>
 
           {/* Auth */}
           <div className="flex items-center gap-3 md:gap-5 text-sm font-medium">
-            <span className="hidden sm:block text-[#FDF6E3]">
-              Hi, <span className="font-semibold">{user?.username}</span>
+            <span className="hidden sm:block text-[#A1A1AA]">
+              Hi, <span className="text-white font-semibold">{user?.username}</span>
             </span>
 
             <button
               onClick={handleLogout}
-              className="bg-white text-[#8C6B1F] px-3 py-1 rounded-lg font-semibold hover:bg-[#F9F9F7] transition duration-200 shadow-sm"
+              className="bg-gradient-to-r from-[#D4AF37] to-[#B8962E] text-black px-4 py-1.5 rounded-full font-semibold hover:brightness-110 transition"
             >
               Logout
             </button>
@@ -96,17 +81,17 @@ export default function Navbar() {
         </div>
 
         {/* Mobile Admin Nav */}
-        <div className="flex justify-center gap-6 py-3 border-t border-[#EEDC82]/30 md:hidden text-sm font-medium bg-[#8C6B1F]/95 backdrop-blur-md">
+        <div className="flex justify-center gap-6 py-3 border-t border-[rgba(212,175,55,0.25)] md:hidden text-sm font-medium bg-[#0F1012]">
 
-          <Link to="/admin" className="hover:text-[#FDF6E3] transition duration-200">
+          <Link to="/admin" className="hover:text-[#D4AF37] transition">
             Dashboard
           </Link>
 
-          <Link to="/admin/products" className="hover:text-[#FDF6E3] transition duration-200">
+          <Link to="/admin/products" className="hover:text-[#D4AF37] transition">
             Products
           </Link>
 
-          <Link to="/admin/orders" className="hover:text-[#FDF6E3] transition duration-200">
+          <Link to="/admin/orders" className="hover:text-[#D4AF37] transition">
             Orders
           </Link>
         </div>
@@ -115,17 +100,17 @@ export default function Navbar() {
   }
 
   /* ============================================================
-     🌟 USER NAVBAR — original view + search added
+     🌟 USER NAVBAR — UI ONLY UPDATED
      ============================================================ */
 
   return (
-    <nav className="bg-gradient-to-r from-[#C9A227] to-[#8C6B1F] text-white shadow-md sticky top-0 z-50">
+    <nav className="bg-[#0F1012] text-white border-b border-[rgba(212,175,55,0.25)] sticky top-0 z-50">
       <div className="max-w-7xl mx-auto flex justify-between items-center px-6 md:px-10 py-4">
 
         {/* --- Brand Logo --- */}
         <Link
           to="/"
-          className="text-3xl font-serif font-bold tracking-wide hover:scale-105 transition-transform duration-200"
+          className="text-3xl font-serif font-bold tracking-wide text-[#D4AF37] hover:opacity-90 transition"
         >
           Eleganza
         </Link>
@@ -133,49 +118,37 @@ export default function Navbar() {
         {/* --- Search Bar (desktop) --- */}
         <form
           onSubmit={handleSearchSubmit}
-          className="hidden md:flex items-center bg-white rounded-full px-3 py-1 shadow-md w-64"
+          className="hidden md:flex items-center bg-[#14161A] rounded-full px-4 py-1.5 border border-[rgba(212,175,55,0.25)] w-64"
         >
           <input
             type="text"
             placeholder="Search products..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            className="w-full text-black px-2 py-1 rounded-full outline-none"
+            className="w-full bg-transparent text-sm text-white placeholder:text-[#71717A] outline-none"
           />
-          <button type="submit" className="text-[#8C6B1F] font-bold px-2">
+          <button type="submit" className="text-[#D4AF37] font-bold px-2">
             🔍
           </button>
         </form>
 
         {/* --- Center Navigation Links --- */}
-        <div className="hidden md:flex items-center gap-6 text-sm font-medium">
-          <Link
-            to="/products"
-            className="hover:text-[#FDF6E3] hover:underline underline-offset-4 transition duration-200"
-          >
+        <div className="hidden md:flex items-center gap-6 text-sm font-medium text-[#A1A1AA]">
+          <Link to="/products" className="hover:text-[#D4AF37] transition">
             View Products
           </Link>
-          <Link
-            to="/orders"
-            className="hover:text-[#FDF6E3] hover:underline underline-offset-4 transition duration-200"
-          >
+          <Link to="/orders" className="hover:text-[#D4AF37] transition">
             My Orders
           </Link>
-          <Link
-            to="/wishlist"
-            className="relative hover:text-[#FDF6E3] transition duration-200 flex items-center"
-          >
+          <Link to="/wishlist" className="relative hover:text-[#D4AF37] transition flex items-center">
             ❤️
             <span className="ml-1 hidden sm:inline">Wishlist</span>
           </Link>
-          <Link
-            to="/cart"
-            className="relative hover:text-[#FDF6E3] transition duration-200 flex items-center"
-          >
+          <Link to="/cart" className="relative hover:text-[#D4AF37] transition flex items-center">
             🛒
             <span className="ml-1 hidden sm:inline">Cart</span>
             {cartItems.length > 0 && (
-              <span className="absolute -top-2 -right-3 bg-red-600 text-xs px-2 rounded-full font-semibold shadow-sm">
+              <span className="absolute -top-2 -right-3 bg-[#D4AF37] text-black text-xs px-2 rounded-full font-semibold">
                 {cartItems.length}
               </span>
             )}
@@ -186,27 +159,24 @@ export default function Navbar() {
         <div className="flex items-center gap-3 md:gap-5 text-sm font-medium">
           {user ? (
             <>
-              <span className="hidden sm:block text-[#FDF6E3]">
-                Hi, <span className="font-semibold">{user.username}</span>
+              <span className="hidden sm:block text-[#A1A1AA]">
+                Hi, <span className="text-white font-semibold">{user.username}</span>
               </span>
               <button
                 onClick={handleLogout}
-                className="bg-white text-[#C9A227] px-3 py-1 rounded-lg font-semibold hover:bg-[#F9F9F7] transition duration-200 shadow-sm"
+                className="bg-gradient-to-r from-[#D4AF37] to-[#B8962E] text-black px-4 py-1.5 rounded-full font-semibold hover:brightness-110 transition"
               >
                 Logout
               </button>
             </>
           ) : (
             <>
-              <Link
-                to="/login"
-                className="hover:text-[#FDF6E3] transition duration-200"
-              >
+              <Link to="/login" className="hover:text-[#D4AF37] transition">
                 Login
               </Link>
               <Link
                 to="/register"
-                className="bg-white text-[#C9A227] px-3 py-1 rounded-lg font-semibold hover:bg-[#F9F9F7] transition duration-200 shadow-sm"
+                className="bg-gradient-to-r from-[#D4AF37] to-[#B8962E] text-black px-4 py-1.5 rounded-full font-semibold hover:brightness-110 transition"
               >
                 Signup
               </Link>
@@ -216,44 +186,31 @@ export default function Navbar() {
       </div>
 
       {/* --- Mobile Navigation (User) --- */}
-      <div className="flex justify-center gap-6 py-3 border-t border-[#EEDC82]/30 md:hidden text-sm font-medium bg-[#C9A227]/95 backdrop-blur-md">
+      <div className="flex justify-center gap-6 py-3 border-t border-[rgba(212,175,55,0.25)] md:hidden text-sm font-medium bg-[#0F1012]">
 
-        {/* Mobile search button */}
         <button
           onClick={() => {
             const term = prompt("Search products:");
             if (term?.trim()) navigate(`/products?search=${encodeURIComponent(term.trim())}`);
           }}
-          className="hover:text-[#FDF6E3]"
+          className="hover:text-[#D4AF37]"
         >
           🔍
         </button>
 
-        <Link
-          to="/products"
-          className="hover:text-[#FDF6E3] transition duration-200"
-        >
+        <Link to="/products" className="hover:text-[#D4AF37] transition">
           Products
         </Link>
-        <Link
-          to="/orders"
-          className="hover:text-[#FDF6E3] transition duration-200"
-        >
+        <Link to="/orders" className="hover:text-[#D4AF37] transition">
           Orders
         </Link>
-        <Link
-          to="/wishlist"
-          className="hover:text-[#FDF6E3] transition duration-200"
-        >
+        <Link to="/wishlist" className="hover:text-[#D4AF37] transition">
           ❤️
         </Link>
-        <Link
-          to="/cart"
-          className="hover:text-[#FDF6E3] transition duration-200 relative"
-        >
+        <Link to="/cart" className="hover:text-[#D4AF37] transition relative">
           🛒
           {cartItems.length > 0 && (
-            <span className="absolute -top-2 -right-3 bg-red-600 text-xs px-1.5 rounded-full font-semibold">
+            <span className="absolute -top-2 -right-3 bg-[#D4AF37] text-black text-xs px-1.5 rounded-full font-semibold">
               {cartItems.length}
             </span>
           )}
