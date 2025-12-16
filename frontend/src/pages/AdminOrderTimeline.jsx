@@ -1,10 +1,15 @@
+// 🕒 ADMIN ORDER TIMELINE — FULL PAGE
+// ✅ Logic unchanged
+// ❌ AdminLayout removed
+// 🎨 Gold & Black Eleganza Admin UI
+
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import axiosInstance from "../api/axiosInstance";
-import AdminLayout from "../components/admin/AdminLayout";
 
 export default function AdminOrderTimeline() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [timeline, setTimeline] = useState(null);
 
   useEffect(() => {
@@ -20,35 +25,80 @@ export default function AdminOrderTimeline() {
     })();
   }, [id]);
 
-  if (!timeline)
+  if (!timeline) {
     return (
-      <AdminLayout>
-        <p>Loading timeline...</p>
-      </AdminLayout>
+      <div className="min-h-screen bg-[#0F1012] flex items-center justify-center text-[#A1A1AA]">
+        Loading timeline...
+      </div>
     );
+  }
 
   return (
-    <AdminLayout>
-      <h1 className="text-3xl font-semibold mb-6">
-        Order #{id} — Status Timeline
-      </h1>
+    <div className="min-h-screen bg-[#0F1012] text-white px-6 py-12">
+      <div className="max-w-5xl mx-auto">
 
-      <div className="space-y-6">
-        {timeline.history.map((entry) => (
-          <div
-            key={entry.id}
-            className="bg-white border rounded-xl p-5 shadow"
+        {/* HEADER */}
+        <div className="mb-12">
+          <h1 className="text-4xl font-bold text-[#D4AF37]">
+            Order #{id}
+          </h1>
+          <p className="text-[#A1A1AA] mt-2">
+            Status timeline & order progress
+          </p>
+        </div>
+
+        {/* TIMELINE */}
+        <div className="relative border-l border-[#262626] ml-6 space-y-10">
+          {timeline.history.map((entry, index) => (
+            <div key={entry.id} className="relative flex gap-6">
+
+              {/* DOT */}
+              <div
+                className={`w-4 h-4 rounded-full mt-1.5 -ml-[9px] border-2 ${
+                  index === timeline.history.length - 1
+                    ? "bg-[#D4AF37] border-[#D4AF37]"
+                    : "bg-[#0F1012] border-[#444]"
+                }`}
+              />
+
+              {/* CARD */}
+              <div className="bg-[#14161A] border border-[#262626] rounded-2xl p-5 w-full shadow-md hover:shadow-xl transition">
+                <div className="flex justify-between items-start gap-4">
+                  <div>
+                    <h3 className="text-lg font-semibold text-white">
+                      {entry.status}
+                    </h3>
+
+                    {entry.note && (
+                      <p className="text-sm text-[#A1A1AA] italic mt-1">
+                        “{entry.note}”
+                      </p>
+                    )}
+                  </div>
+
+                  <p className="text-xs text-[#6B6B6B] whitespace-nowrap">
+                    {new Date(entry.created_at).toLocaleString()}
+                  </p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* BACK BUTTON */}
+        <div className="mt-14 text-center">
+          <button
+            onClick={() => navigate("/admin/orders")}
+            className="px-8 py-3 rounded-full bg-gradient-to-r from-[#D4AF37] to-[#B8962E] text-black font-semibold hover:brightness-110 transition"
           >
-            <p className="font-semibold text-lg">{entry.status}</p>
-            {entry.note && (
-              <p className="text-gray-600 italic">“{entry.note}”</p>
-            )}
-            <p className="text-gray-500 text-sm mt-2">
-              Changed at: {new Date(entry.created_at).toLocaleString()}
-            </p>
-          </div>
-        ))}
+            ← Back to Orders
+          </button>
+        </div>
+
+        <p className="text-center text-xs text-[#6B6B6B] mt-10">
+          Eleganza Admin • Order Timeline
+        </p>
       </div>
-    </AdminLayout>
+    </div>
   );
 }
