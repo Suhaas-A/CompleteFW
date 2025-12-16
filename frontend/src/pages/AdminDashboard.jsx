@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import AdminLayout from "../components/admin/AdminLayout";
 import { getAllProducts } from "../api/productApi";
 import { getSalesSummary } from "../api/adminApi";
 import Loader from "../components/common/Loader";
@@ -18,7 +17,9 @@ export default function AdminDashboard() {
           getAllProducts(),
           getSalesSummary().catch(() => ({ data: null })),
         ]);
-        setProductCount(prodRes.data.length || 0);
+
+        setProductCount(prodRes.data?.length || 0);
+
         if (reportRes?.data) {
           setTopProducts(reportRes.data.top_products || []);
           setRevenue(reportRes.data.total_revenue || 0);
@@ -34,89 +35,147 @@ export default function AdminDashboard() {
 
   if (loading) return <Loader />;
 
+  const totalSold = topProducts.reduce(
+    (sum, p) => sum + p.quantity_sold,
+    0
+  );
+
   return (
-    <AdminLayout>
-      <div className="min-h-screen bg-[#F9F9F7] p-6 sm:p-10 rounded-2xl">
-        {/* Header */}
-        <h2 className="text-3xl font-serif font-semibold text-[#3A3A3A] mb-8 border-b-4 border-[#C9A227] inline-block pb-2">
-          Dashboard Overview
-        </h2>
+    <div className="min-h-screen bg-[#0F1012] text-white px-8 py-14">
 
-        {/* Stats Section */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-12">
-          {/* Total Products */}
-          <div className="p-6 rounded-xl bg-gradient-to-r from-[#C9A227] to-[#8C6B1F] text-white shadow-lg transform hover:scale-[1.02] transition-all duration-300">
-            <p className="text-sm uppercase tracking-wider opacity-90">Total Products</p>
-            <h3 className="text-4xl font-bold mt-2">{productCount}</h3>
-            <p className="text-xs mt-1 opacity-80">Active products in catalog</p>
-          </div>
+      {/* HEADER */}
+      <h1 className="text-4xl font-bold text-[#D4AF37] mb-12">
+        Admin Dashboard Overview
+      </h1>
 
-          {/* Revenue */}
-          <div className="p-6 rounded-xl bg-gradient-to-r from-[#EEDC82] to-[#C9A227] text-[#3A3A3A] shadow-lg transform hover:scale-[1.02] transition-all duration-300">
-            <p className="text-sm uppercase tracking-wider opacity-80">Total Revenue</p>
-            <h3 className="text-4xl font-bold mt-2">
-              ₹{Number(revenue).toLocaleString()}
-            </h3>
-            <p className="text-xs mt-1 opacity-70">Cumulative sales to date</p>
-          </div>
-
-          {/* Top Product */}
-          <div className="p-6 rounded-xl bg-gradient-to-r from-[#F7F4E1] to-[#EAD38B] shadow-lg transform hover:scale-[1.02] transition-all duration-300">
-            <p className="text-sm uppercase tracking-wider text-[#8C6B1F] opacity-80">Top Product</p>
-            <h3 className="text-lg font-semibold text-[#3A3A3A] mt-2">
-              {topProducts[0]
-                ? `#${topProducts[0].product_id}`
-                : "—"}
-            </h3>
-            <p className="text-sm text-[#6B6B6B]">
-              Sold: {topProducts[0]?.quantity_sold || 0}
-            </p>
-          </div>
+      {/* STATS */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-14">
+        <div className="bg-[#14161A] border border-[#262626] rounded-2xl p-6">
+          <p className="text-sm text-[#A1A1AA] uppercase">Total Revenue</p>
+          <h3 className="text-4xl font-bold text-[#D4AF37] mt-2">
+            ₹{Number(revenue).toLocaleString()}
+          </h3>
         </div>
 
-        {/* Top Products Table */}
-        <div className="bg-white rounded-2xl shadow-xl border border-[#EDE6D8] p-6 transition-all duration-300">
-          <h3 className="text-xl font-semibold text-[#3A3A3A] mb-6 border-b border-[#EDE6D8] pb-2">
-            Top Products (By Quantity Sold)
-          </h3>
+        <div className="bg-[#14161A] border border-[#262626] rounded-2xl p-6">
+          <p className="text-sm text-[#A1A1AA] uppercase">Total Products</p>
+          <h3 className="text-4xl font-bold mt-2">{productCount}</h3>
+        </div>
 
-          {topProducts.length > 0 ? (
-            <table className="w-full border-collapse">
-              <thead>
-                <tr className="text-left text-[#555] border-b border-[#EEE]">
-                  <th className="py-3 px-2">Product ID</th>
-                  <th className="py-3 px-2">Quantity Sold</th>
-                  <th className="py-3 px-2">Performance</th>
-                </tr>
-              </thead>
-              <tbody>
-                {topProducts.map((p, index) => (
-                  <tr
-                    key={p.product_id}
-                    className={`border-b border-[#F1F1F1] hover:bg-[#FAF9F5] transition-all ${
-                      index === 0 ? "font-semibold text-[#8C6B1F]" : "text-[#3A3A3A]"
-                    }`}
-                  >
-                    <td className="py-3 px-2">#{p.product_id}</td>
-                    <td className="py-3 px-2">{p.quantity_sold}</td>
-                    <td className="py-3 px-2">
-                      {index === 0
-                        ? "🏆 Best Seller"
-                        : index < 3
-                        ? "🔥 Trending"
-                        : "⭐ Good"}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          ) : (
-            <p className="text-gray-500 text-center py-6">
-              No sales data available yet.
-            </p>
-          )}
+        <div className="bg-[#14161A] border border-[#262626] rounded-2xl p-6">
+          <p className="text-sm text-[#A1A1AA] uppercase">Items Sold</p>
+          <h3 className="text-4xl font-bold mt-2">{totalSold}</h3>
         </div>
       </div>
-    </AdminLayout>
+
+      {/* ANALYTICS */}
+      <div className="bg-[#14161A] border border-[#262626] rounded-3xl p-6 mb-12">
+        <h3 className="text-xl font-semibold text-[#D4AF37] mb-8">
+          Sales Analytics
+        </h3>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+          {/* PIE CHART — based on real data */}
+          <div className="bg-[#0F1012] border border-[#262626] rounded-2xl p-6 flex flex-col items-center">
+            <p className="text-sm text-[#A1A1AA] mb-4">
+              Product Contribution
+            </p>
+
+            <div
+              className="w-40 h-40 rounded-full"
+              style={{
+                background: `conic-gradient(
+                  #D4AF37 0% ${
+                    totalSold
+                      ? (topProducts[0]?.quantity_sold / totalSold) * 100
+                      : 0
+                  }%,
+                  #B8962E ${
+                    totalSold
+                      ? (topProducts[0]?.quantity_sold / totalSold) * 100
+                      : 0
+                  }% 70%,
+                  #262626 70% 100%
+                )`,
+              }}
+            />
+
+            <div className="mt-5 text-xs text-[#A1A1AA] space-y-1">
+              <p>
+                <span className="text-[#D4AF37]">●</span> Top Product
+              </p>
+              <p>
+                <span className="text-[#B8962E]">●</span> Other Products
+              </p>
+              <p>
+                <span className="text-[#262626]">●</span> Remaining
+              </p>
+            </div>
+          </div>
+
+          {/* BAR CHART */}
+          <div className="lg:col-span-2 bg-[#0F1012] border border-[#262626] rounded-2xl p-6">
+            <p className="text-sm text-[#A1A1AA] mb-6">
+              Top Products by Quantity
+            </p>
+
+            <div className="flex items-end gap-4 h-40">
+              {topProducts.slice(0, 6).map((p, i) => {
+                const height = totalSold
+                  ? (p.quantity_sold / totalSold) * 100
+                  : 0;
+
+                return (
+                  <div key={p.product_id} className="flex-1 text-center">
+                    <div
+                      style={{ height: `${height}%` }}
+                      className="w-full rounded-t-lg bg-gradient-to-t from-[#B8962E] to-[#D4AF37]"
+                    />
+                    <p className="text-xs text-[#A1A1AA] mt-2">
+                      #{p.product_id}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* TOP PRODUCTS LIST */}
+      <div className="bg-[#14161A] border border-[#262626] rounded-3xl p-6">
+        <h3 className="text-xl font-semibold text-[#D4AF37] mb-6">
+          Top Selling Products
+        </h3>
+
+        {topProducts.length > 0 ? (
+          <div className="space-y-4">
+            {topProducts.slice(0, 5).map((p, i) => (
+              <div
+                key={p.product_id}
+                className="flex justify-between items-center bg-[#0F1012] border border-[#262626] rounded-xl px-5 py-4"
+              >
+                <span className="text-[#A1A1AA]">
+                  #{p.product_id}
+                </span>
+
+                <span className="text-[#D4AF37] font-semibold">
+                  {p.quantity_sold} sold
+                </span>
+
+                <span className="text-xs text-green-500">
+                  {i === 0 ? "Best Seller" : "Trending"}
+                </span>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-[#A1A1AA] text-center py-6">
+            No sales data available yet.
+          </p>
+        )}
+      </div>
+    </div>
   );
 }
