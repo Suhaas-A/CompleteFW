@@ -100,8 +100,9 @@ export default function ProductDetails() {
           <p className="text-2xl font-semibold mt-3">₹{product.price}</p>
 
           <div className="flex gap-3 mt-5">
+            {/* ⭐ FIXED: CART BUTTON (updates navbar instantly) */}
             <button
-              onClick={() => handleAddToCart(product.id)}
+              onClick={() => handleAddToCart(product.id, 1)}
               className="bg-yellow-400 hover:bg-yellow-500 text-white px-4 py-2 rounded-md"
             >
               Add to Cart
