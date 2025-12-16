@@ -1,5 +1,4 @@
 import { useState } from "react";
-import AdminLayout from "../components/admin/AdminLayout";
 import {
   addCategory,
   addSize,
@@ -47,160 +46,171 @@ export default function AdminCategories() {
   };
 
   return (
-    <AdminLayout>
-      <div className="bg-[#F9F9F7] p-8 rounded-2xl shadow-xl border border-[#EDE6D8]">
-        {/* Header */}
-        <h2 className="text-3xl font-serif font-semibold text-[#3A3A3A] mb-8 border-b-4 border-[#C9A227] inline-block pb-2">
+    <div className="min-h-screen bg-[#0F1012] text-white px-6 py-12">
+
+      {/* HEADER */}
+      <div className="mb-12">
+        <h1 className="text-4xl font-bold text-[#D4AF37]">
           Manage Product Metadata
-        </h2>
+        </h1>
+        <p className="text-[#A1A1AA] mt-2">
+          Categories, colors, sizes, discounts & more
+        </p>
+      </div>
 
-        {/* Input Grid */}
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {/* Helper function: card */}
-          {[
-            {
-              title: "Add Category",
-              placeholder: "Category name",
-              key: "category",
-              action: () => handleAdd(addCategory, inputs.category),
-            },
-            {
-              title: "Add Color",
-              placeholder: "Color name",
-              key: "color",
-              action: () => handleAdd(addColor, inputs.color),
-            },
-            {
-              title: "Add Size",
-              placeholder: "Size (e.g. S, M, L)",
-              key: "size",
-              action: () => handleAdd(addSize, inputs.size),
-            },
-            {
-              title: "Add Material",
-              placeholder: "Material (e.g. Cotton, Silk)",
-              key: "material",
-              action: () => handleAdd(addMaterial, inputs.material),
-            },
-            {
-              title: "Add Pattern",
-              placeholder: "Pattern (e.g. Checked, Plain)",
-              key: "pattern",
-              action: () => handleAdd(addPattern, inputs.pattern),
-            },
-          ].map((item, idx) => (
-            <div
-              key={idx}
-              className="p-6 rounded-xl bg-white shadow-md hover:shadow-xl border border-[#EDE6D8] transition-all duration-300 hover:-translate-y-1"
-            >
-              <h4 className="font-semibold text-[#3A3A3A] mb-3">
-                {item.title}
-              </h4>
-              <input
-                value={inputs[item.key]}
-                onChange={(e) => handleChange(item.key, e.target.value)}
-                placeholder={item.placeholder}
-                className="border border-[#E0D8C3] focus:ring-2 focus:ring-[#C9A227] p-2 rounded-lg w-full outline-none"
-              />
-              <button
-                onClick={item.action}
-                className="bg-gradient-to-r from-[#C9A227] to-[#8C6B1F] text-white px-4 py-2 mt-4 w-full rounded-lg font-semibold hover:shadow-[0_0_10px_rgba(201,162,39,0.4)] transition-all duration-300"
-              >
-                Add
-              </button>
-            </div>
-          ))}
+      {/* GRID */}
+      <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
 
-          {/* Pack */}
-          <div className="p-6 rounded-xl bg-white shadow-md hover:shadow-xl border border-[#EDE6D8] transition-all duration-300 hover:-translate-y-1">
-            <h4 className="font-semibold text-[#3A3A3A] mb-3">Add Pack</h4>
+        {/* SIMPLE INPUT CARDS */}
+        {[
+          { title: "Add Category", key: "category", placeholder: "Eg. Jackets", fn: addCategory },
+          { title: "Add Color", key: "color", placeholder: "Eg. Black", fn: addColor },
+          { title: "Add Size", key: "size", placeholder: "Eg. S, M, L", fn: addSize },
+          { title: "Add Material", key: "material", placeholder: "Eg. Cotton", fn: addMaterial },
+          { title: "Add Pattern", key: "pattern", placeholder: "Eg. Checked", fn: addPattern },
+        ].map((item, i) => (
+          <div
+            key={i}
+            className="bg-[#14161A] border border-[#262626] rounded-3xl p-6 shadow-xl
+                       hover:-translate-y-1 transition"
+          >
+            <h3 className="text-lg font-semibold text-[#D4AF37] mb-4">
+              {item.title}
+            </h3>
+
             <input
-              value={inputs.packName}
-              onChange={(e) => handleChange("packName", e.target.value)}
-              placeholder="Pack Name (e.g. Combo Set)"
-              className="border border-[#E0D8C3] focus:ring-2 focus:ring-[#C9A227] p-2 rounded-lg w-full mb-2 outline-none"
+              value={inputs[item.key]}
+              onChange={(e) => handleChange(item.key, e.target.value)}
+              placeholder={item.placeholder}
+              className="w-full bg-[#0F1012] border border-[#262626]
+                         rounded-xl px-4 py-3 mb-5
+                         focus:outline-none focus:border-[#D4AF37]"
             />
-            <input
-              value={inputs.packNumber}
-              onChange={(e) => handleChange("packNumber", e.target.value)}
-              placeholder="Number of items"
-              type="number"
-              className="border border-[#E0D8C3] focus:ring-2 focus:ring-[#C9A227] p-2 rounded-lg w-full outline-none"
-            />
+
             <button
-              onClick={() =>
-                handleAdd(addPack, inputs.packName, Number(inputs.packNumber))
-              }
-              className="bg-gradient-to-r from-[#C9A227] to-[#8C6B1F] text-white px-4 py-2 mt-4 w-full rounded-lg font-semibold hover:shadow-[0_0_10px_rgba(201,162,39,0.4)] transition-all duration-300"
+              onClick={() => handleAdd(item.fn, inputs[item.key])}
+              className="w-full bg-gradient-to-r from-[#D4AF37] to-[#B8962E]
+                         text-black py-3 rounded-full font-semibold
+                         hover:brightness-110 transition"
             >
               Add
             </button>
           </div>
+        ))}
 
-          {/* Discount */}
-          <div className="p-6 rounded-xl bg-white shadow-md hover:shadow-xl border border-[#EDE6D8] transition-all duration-300 hover:-translate-y-1">
-            <h4 className="font-semibold text-[#3A3A3A] mb-3">Add Discount</h4>
-            <input
-              value={inputs.discountName}
-              onChange={(e) => handleChange("discountName", e.target.value)}
-              placeholder="Discount name"
-              className="border border-[#E0D8C3] focus:ring-2 focus:ring-[#C9A227] p-2 rounded-lg w-full mb-2 outline-none"
-            />
-            <input
-              value={inputs.discountProp}
-              onChange={(e) => handleChange("discountProp", e.target.value)}
-              placeholder="Discount % or Value"
-              className="border border-[#E0D8C3] focus:ring-2 focus:ring-[#C9A227] p-2 rounded-lg w-full outline-none"
-            />
-            <button
-              onClick={() =>
-                handleAdd(addDiscount, inputs.discountName, inputs.discountProp)
-              }
-              className="bg-gradient-to-r from-[#C9A227] to-[#8C6B1F] text-white px-4 py-2 mt-4 w-full rounded-lg font-semibold hover:shadow-[0_0_10px_rgba(201,162,39,0.4)] transition-all duration-300"
-            >
-              Add
-            </button>
-          </div>
+        {/* PACK */}
+        <div className="bg-[#14161A] border border-[#262626] rounded-3xl p-6 shadow-xl">
+          <h3 className="text-lg font-semibold text-[#D4AF37] mb-4">
+            Add Pack
+          </h3>
 
-          {/* Coupon */}
-          <div className="p-6 rounded-xl bg-white shadow-md hover:shadow-xl border border-[#EDE6D8] transition-all duration-300 hover:-translate-y-1">
-            <h4 className="font-semibold text-[#3A3A3A] mb-3">Add Coupon</h4>
-            <input
-              value={inputs.couponName}
-              onChange={(e) => handleChange("couponName", e.target.value)}
-              placeholder="Coupon code"
-              className="border border-[#E0D8C3] focus:ring-2 focus:ring-[#C9A227] p-2 rounded-lg w-full mb-2 outline-none"
-            />
-            <input
-              value={inputs.couponOffer}
-              onChange={(e) => handleChange("couponOffer", e.target.value)}
-              placeholder="Offer value (%)"
-              className="border border-[#E0D8C3] focus:ring-2 focus:ring-[#C9A227] p-2 rounded-lg w-full outline-none"
-            />
-            <button
-              onClick={() =>
-                handleAdd(addCoupon, inputs.couponName, inputs.couponOffer)
-              }
-              className="bg-gradient-to-r from-[#C9A227] to-[#8C6B1F] text-white px-4 py-2 mt-4 w-full rounded-lg font-semibold hover:shadow-[0_0_10px_rgba(201,162,39,0.4)] transition-all duration-300"
-            >
-              Add
-            </button>
-          </div>
+          <input
+            value={inputs.packName}
+            onChange={(e) => handleChange("packName", e.target.value)}
+            placeholder="Pack Name"
+            className="w-full bg-[#0F1012] border border-[#262626]
+                       rounded-xl px-4 py-3 mb-3"
+          />
+          <input
+            value={inputs.packNumber}
+            onChange={(e) => handleChange("packNumber", e.target.value)}
+            placeholder="No. of items"
+            type="number"
+            className="w-full bg-[#0F1012] border border-[#262626]
+                       rounded-xl px-4 py-3"
+          />
+
+          <button
+            onClick={() =>
+              handleAdd(addPack, inputs.packName, Number(inputs.packNumber))
+            }
+            className="w-full mt-5 bg-gradient-to-r from-[#D4AF37] to-[#B8962E]
+                       text-black py-3 rounded-full font-semibold
+                       hover:brightness-110 transition"
+          >
+            Add Pack
+          </button>
         </div>
 
-        {/* Message */}
-        {msg && (
-          <div
-            className={`text-center text-sm font-medium mt-6 ${
-              msg.includes("✅")
-                ? "text-green-700 bg-green-100"
-                : "text-red-700 bg-red-100"
-            } py-2 rounded-md`}
+        {/* DISCOUNT */}
+        <div className="bg-[#14161A] border border-[#262626] rounded-3xl p-6 shadow-xl">
+          <h3 className="text-lg font-semibold text-[#D4AF37] mb-4">
+            Add Discount
+          </h3>
+
+          <input
+            value={inputs.discountName}
+            onChange={(e) => handleChange("discountName", e.target.value)}
+            placeholder="Discount Name"
+            className="w-full bg-[#0F1012] border border-[#262626]
+                       rounded-xl px-4 py-3 mb-3"
+          />
+          <input
+            value={inputs.discountProp}
+            onChange={(e) => handleChange("discountProp", e.target.value)}
+            placeholder="Discount %"
+            className="w-full bg-[#0F1012] border border-[#262626]
+                       rounded-xl px-4 py-3"
+          />
+
+          <button
+            onClick={() =>
+              handleAdd(addDiscount, inputs.discountName, inputs.discountProp)
+            }
+            className="w-full mt-5 bg-gradient-to-r from-[#D4AF37] to-[#B8962E]
+                       text-black py-3 rounded-full font-semibold
+                       hover:brightness-110 transition"
           >
-            {msg}
-          </div>
-        )}
+            Add Discount
+          </button>
+        </div>
+
+        {/* COUPON */}
+        <div className="bg-[#14161A] border border-[#262626] rounded-3xl p-6 shadow-xl">
+          <h3 className="text-lg font-semibold text-[#D4AF37] mb-4">
+            Add Coupon
+          </h3>
+
+          <input
+            value={inputs.couponName}
+            onChange={(e) => handleChange("couponName", e.target.value)}
+            placeholder="Coupon Code"
+            className="w-full bg-[#0F1012] border border-[#262626]
+                       rounded-xl px-4 py-3 mb-3"
+          />
+          <input
+            value={inputs.couponOffer}
+            onChange={(e) => handleChange("couponOffer", e.target.value)}
+            placeholder="Offer %"
+            className="w-full bg-[#0F1012] border border-[#262626]
+                       rounded-xl px-4 py-3"
+          />
+
+          <button
+            onClick={() =>
+              handleAdd(addCoupon, inputs.couponName, inputs.couponOffer)
+            }
+            className="w-full mt-5 bg-gradient-to-r from-[#D4AF37] to-[#B8962E]
+                       text-black py-3 rounded-full font-semibold
+                       hover:brightness-110 transition"
+          >
+            Add Coupon
+          </button>
+        </div>
       </div>
-    </AdminLayout>
+
+      {/* STATUS MESSAGE */}
+      {msg && (
+        <div
+          className={`mt-10 text-center py-3 rounded-xl text-sm font-semibold
+            ${msg.includes("✅")
+              ? "bg-green-500/20 text-green-400"
+              : "bg-red-500/20 text-red-400"
+            }`}
+        >
+          {msg}
+        </div>
+      )}
+    </div>
   );
 }
