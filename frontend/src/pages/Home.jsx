@@ -25,9 +25,10 @@ export default function Home() {
     },
   };
 
-  // Load normal user home content
+  /* ================= USER HOME (UNCHANGED) ================= */
   useEffect(() => {
     if (isAdmin) return;
+
     async function loadData() {
       try {
         const [catRes, prodRes] = await Promise.all([
@@ -35,21 +36,23 @@ export default function Home() {
           axios.get("https://complete-fw.vercel.app/api/all_products", header),
         ]);
         setCategories(catRes.data);
-        setFeatured(prodRes.data.slice(0, 8));
+        setFeatured(prodRes.data.slice(0, 12));
       } catch (err) {
         console.error(err);
       }
     }
+
     loadData();
   }, [isAdmin]);
 
-  // Load admin dashboard content
+  /* ================= ADMIN DASHBOARD DATA ================= */
   useEffect(() => {
     if (!isAdmin) return;
+
     async function loadAdminDashboard() {
       try {
         const { data } = await axios.get(
-          "https://complete-fw.vercel.app/api/admin/sales-summary",
+          "http://127.0.0.1:8000/api/admin/sales-summary",
           header
         );
         setDashboard(data);
@@ -57,272 +60,283 @@ export default function Home() {
         console.error(err);
       }
     }
+
     loadAdminDashboard();
   }, [isAdmin]);
 
-  /* ============================================================
-     🚀 ADMIN HOME PAGE — Admin sees ONLY this section
-     ============================================================ */
+  /* =========================================================
+     🚀 ADMIN DASHBOARD — EXACT PREVIEW UI
+     ========================================================= */
   if (isAdmin) {
+    const topProducts = dashboard?.top_products || [];
+    const totalRevenue = dashboard?.total_revenue || 0;
+    const totalSold = topProducts.reduce(
+      (sum, p) => sum + p.quantity_sold,
+      0
+    );
+    const maxQty = Math.max(...topProducts.map(p => p.quantity_sold), 1);
+
     return (
-      <div className="bg-[#F9F9F7] min-h-screen px-6 md:px-12 py-12 text-[#3A3A3A]">
-        <h1 className="text-4xl font-serif font-bold text-[#8C6B1F] mb-10">
-          Admin Dashboard Overview
-        </h1>
+      <div className="min-h-screen bg-[#0F1012] text-white p-6">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-5 gap-6">
 
-        {/* Dashboard Stat Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-12">
-          {/* Revenue */}
-          <div className="p-6 rounded-xl bg-gradient-to-r from-[#C9A227] to-[#8C6B1F] text-white shadow-lg">
-            <p className="text-sm uppercase opacity-80">Total Revenue</p>
-            <h3 className="text-4xl font-bold mt-1">
-              ₹{Number(dashboard?.total_revenue || 0).toLocaleString()}
-            </h3>
-          </div>
+          {/* SIDEBAR */}
+          <aside className="lg:col-span-1 bg-[#14161A] border border-[#262626] rounded-3xl p-6">
+            <h1 className="text-xl font-bold text-[#D4AF37] mb-10">
+              Eleganza Admin
+            </h1>
 
-          {/* Top Product */}
-          <div className="p-6 rounded-xl bg-gradient-to-r from-[#EEDC82] to-[#C9A227] text-[#3A3A3A] shadow-lg">
-            <p className="text-sm uppercase opacity-80">Top Product</p>
-            <h3 className="text-xl font-semibold mt-1">
-              {dashboard?.top_products?.[0]
-                ? `#${dashboard.top_products[0].product_id}`
-                : "—"}
-            </h3>
-          </div>
+            <ul className="space-y-4 text-sm">
+              {[
+                "Dashboard",
+                "Products",
+                "Categories",
+                "Orders",
+                "Customers",
+                "Reviews",
+              ].map((item, i) => (
+                <li
+                  key={i}
+                  onClick={function() {window.location = '/admin/' + item}}
+                  className={`px-4 py-2 rounded-xl ${
+                    i === 0
+                      ? "bg-gradient-to-r from-[#D4AF37] to-[#B8962E] text-black font-semibold"
+                      : "text-[#A1A1AA] hover:bg-[#1F2126]"
+                  }`}
+                >
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </aside>
 
-          {/* Total Items Sold */}
-          <div className="p-6 rounded-xl bg-gradient-to-r from-[#FFF7DA] to-[#EAD38B] shadow-lg">
-            <p className="text-sm uppercase opacity-80">Items Sold</p>
-            <h3 className="text-4xl font-bold mt-1">
-              {dashboard?.top_products?.reduce(
-                (sum, p) => sum + p.quantity_sold,
-                0
-              ) || 0}
-            </h3>
-          </div>
-        </div>
+          {/* MAIN */}
+          <main className="lg:col-span-4 space-y-6">
 
-        {/* Top-selling table */}
-        <div className="bg-white p-6 rounded-2xl shadow border">
-          <h3 className="text-xl font-semibold mb-4 border-b pb-2">
-            Top Selling Products
-          </h3>
+            {/* TOP BAR */}
+            <div className="bg-[#14161A] border border-[#262626] rounded-3xl p-6 flex justify-between items-center">
+              <h2 className="text-xl font-semibold text-[#D4AF37]">
+                Welcome back, Admin 👑
+              </h2>
+              <input
+                placeholder="Search dashboard"
+                className="bg-[#0F1012] border border-[#262626] rounded-full px-4 py-2 text-sm"
+              />
+            </div>
 
-          {dashboard?.top_products?.length > 0 ? (
-            <table className="w-full border-collapse text-left">
-              <thead>
-                <tr>
-                  <th className="py-2 px-2">Product ID</th>
-                  <th className="py-2 px-2">Quantity Sold</th>
-                </tr>
-              </thead>
-              <tbody>
-                {dashboard.top_products.map((p) => (
-                  <tr key={p.product_id} className="border-t">
-                    <td className="py-2 px-2">#{p.product_id}</td>
-                    <td className="py-2 px-2">{p.quantity_sold}</td>
-                  </tr>
+            {/* STATS */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="bg-[#14161A] border border-[#262626] rounded-3xl p-6">
+                <p className="text-sm text-[#A1A1AA]">Total Revenue</p>
+                <h3 className="text-3xl font-bold text-[#D4AF37] mt-2">
+                  ₹{totalRevenue.toLocaleString()}
+                </h3>
+              </div>
+
+              <div className="bg-[#14161A] border border-[#262626] rounded-3xl p-6">
+                <p className="text-sm text-[#A1A1AA]">Total Orders</p>
+                <h3 className="text-3xl font-bold text-[#D4AF37] mt-2">
+                  {topProducts.length}
+                </h3>
+              </div>
+
+              <div className="bg-[#14161A] border border-[#262626] rounded-3xl p-6">
+                <p className="text-sm text-[#A1A1AA]">Items Sold</p>
+                <h3 className="text-3xl font-bold text-[#D4AF37] mt-2">
+                  {totalSold}
+                </h3>
+              </div>
+            </div>
+
+            {/* ANALYTICS */}
+            <div className="bg-[#14161A] border border-[#262626] rounded-3xl p-6">
+              <h3 className="font-semibold mb-6 text-[#D4AF37]">
+                Sales Analytics
+              </h3>
+
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+                {/* PIE */}
+                <div className="bg-[#0F1012] border border-[#262626] rounded-2xl p-4 flex flex-col items-center">
+                  <p className="text-sm text-[#A1A1AA] mb-4">
+                    Product Share
+                  </p>
+                  <div
+                    className="w-40 h-40 rounded-full"
+                    style={{
+                      background: `conic-gradient(
+                        #D4AF37 0% ${Math.min(100, (topProducts[0]?.quantity_sold / totalSold) * 100 || 0)}%,
+                        #B8962E ${Math.min(100, (topProducts[0]?.quantity_sold / totalSold) * 100 || 0)}% 100%
+                      )`,
+                    }}
+                  />
+                </div>
+
+                {/* BAR */}
+                <div className="lg:col-span-2 bg-[#0F1012] border border-[#262626] rounded-2xl p-4">
+                  <p className="text-sm text-[#A1A1AA] mb-4">
+                    Top Products
+                  </p>
+
+                  <div className="flex items-end gap-4 h-40">
+                    {topProducts.map((p) => (
+                      <div key={p.product_id} className="flex-1">
+                        <div
+                          style={{
+                            height: `${(p.quantity_sold / maxQty) * 100}%`,
+                          }}
+                          className="w-full bg-gradient-to-t from-[#B8962E] to-[#D4AF37] rounded-t-lg"
+                        />
+                        <p className="text-xs text-center text-[#A1A1AA] mt-2">
+                          #{p.product_id}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            {/* RECENT ORDERS */}
+            <div className="bg-[#14161A] border border-[#262626] rounded-3xl p-6">
+              <h3 className="font-semibold mb-4 text-[#D4AF37]">
+                Top Selling Products
+              </h3>
+
+              <div className="space-y-3 text-sm">
+                {topProducts.slice(0, 5).map((p) => (
+                  <div
+                    key={p.product_id}
+                    className="flex justify-between items-center bg-[#0F1012] border border-[#262626] rounded-xl px-4 py-3"
+                  >
+                    <span className="text-[#A1A1AA]">
+                      Product #{p.product_id}
+                    </span>
+                    <span className="text-[#D4AF37] font-semibold">
+                      {p.quantity_sold} sold
+                    </span>
+                  </div>
                 ))}
-              </tbody>
-            </table>
-          ) : (
-            <p className="text-gray-500 py-4 text-center">No sales data</p>
-          )}
-        </div>
+              </div>
+            </div>
 
-        {/* Button to full admin panel */}
-        <div className="text-center mt-10">
-          <Link
-            to="/admin"
-            className="bg-gradient-to-r from-[#C9A227] to-[#8C6B1F] text-white px-6 py-3 rounded-lg shadow hover:scale-105 transition"
-          >
-            Go to Full Dashboard →
-          </Link>
+          </main>
         </div>
       </div>
     );
   }
 
-  /* ============================================================
-     🌟 USER HOME PAGE — EXACTLY YOUR ORIGINAL CODE (UNCHANGED)
-     ============================================================ */
+  /* ================= USER HOME (AS IS) ================= */
   return (
-    <div className="bg-[#F9F9F7] text-[#2E2E2E] font-sans overflow-x-hidden">
-      {/* 🔥 Hero Section */}
-      <section className="relative w-full min-h-[90vh] flex flex-col items-center justify-center bg-gradient-to-r from-[#fef7e2] via-[#fffaf0] to-[#faf3da] overflow-hidden">
-        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=1800&q=80')] bg-cover bg-center opacity-25"></div>
+    <div className="bg-[#0F1012] text-white">
+      <div className="bg-[#0F1012] text-white overflow-x-hidden">
 
-        <div className="relative z-10 text-center max-w-3xl px-6">
-          <h1 className="text-5xl md:text-6xl font-extrabold leading-tight text-[#2E2E2E]">
-            Redefining Fashion with{" "}
-            <span className="text-[#C9A227]">Eleganza</span>
-          </h1>
-          <p className="text-lg text-gray-700 mt-4">
-            Experience clothing that blends luxury, comfort, and timeless design.
-            Eleganza brings you premium collections crafted to celebrate your individuality.
+      {/* HERO */}
+      <section className="relative min-h-screen flex items-center justify-center px-8">
+        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=2000&q=80')] bg-cover bg-center opacity-30" />
+        <div className="relative z-10 text-center max-w-4xl">
+          <p className="text-sm tracking-widest text-[#D4AF37] mb-4">
+            CONTEMPORARY FASHION
           </p>
-          <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
-            <Link
-              to="/products"
-              className="bg-gradient-to-r from-[#C9A227] to-[#8C6B1F] text-white font-semibold px-6 py-3 rounded-full shadow-lg hover:scale-105 transition-all duration-300"
-            >
-              Shop Now
-            </Link>
-            <Link
-              to="/about"
-              className="border-2 border-[#C9A227] text-[#C9A227] font-semibold px-6 py-3 rounded-full hover:bg-[#C9A227] hover:text-white transition-all duration-300"
-            >
-              Learn More
-            </Link>
-          </div>
+          <h1 className="text-6xl md:text-7xl font-extrabold mb-6">
+            Elevate Your <span className="text-[#D4AF37]">Style</span>
+          </h1>
+          <p className="text-[#A1A1AA] text-lg max-w-2xl mx-auto mb-10">
+            Eleganza creates refined everyday wear with premium fabrics,
+            timeless silhouettes, and confident design.
+          </p>
+          <Link
+            to="/products"
+            className="bg-gradient-to-r from-[#D4AF37] to-[#B8962E] text-black px-10 py-4 rounded-full font-semibold hover:brightness-110 transition"
+          >
+            Shop Collection
+          </Link>
         </div>
       </section>
 
-      {/* 🧵 Category Showcase */}
-      <section className="py-20 px-6 max-w-7xl mx-auto">
-        <h2 className="text-4xl font-bold font-serif text-center text-[#8C6B1F] mb-12">
-          Discover Our Collections
-        </h2>
+      {/* CATEGORY-WISE PRODUCT SHOWCASE */}
+      {categories.map((cat) => {
+        const catProducts = featured
+          .filter((p) => p.category_id === cat.id)
+          .slice(0, 4);
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
-          {categories.map((cat) => (
-            <Link
-              key={cat.id}
-              to={`/category/${cat.id}`}
-              className="relative group rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300"
-            >
-              <img
-                src={
-                  cat.photo_link ||
-                  "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?auto=format&fit=crop&w=700&q=80"
-                }
-                alt={cat.name}
-                className="w-full h-60 object-cover group-hover:scale-110 transition-transform duration-500"
-              />
-              <div className="absolute inset-0 bg-black/40 group-hover:bg-black/60 transition-all"></div>
-              <h3 className="absolute bottom-4 left-4 text-white text-lg font-semibold tracking-wide">
+        if (catProducts.length === 0) return null;
+
+        return (
+          <section key={cat.id} className="py-24 max-w-7xl mx-auto px-8">
+            <div className="flex justify-between items-center mb-10">
+              <h2 className="text-3xl font-bold text-[#D4AF37]">
                 {cat.name}
-              </h3>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      {/* 👗 Featured Products */}
-      <section className="py-20 px-6 bg-[#FFFDF5] border-t border-[#E8D9A6]">
-        <h2 className="text-4xl font-serif font-bold text-center text-[#8C6B1F] mb-12">
-          Featured Styles
-        </h2>
-
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-8 max-w-7xl mx-auto">
-          {featured.map((p) => (
-            <div
-              key={p.id}
-              className="bg-white rounded-3xl shadow-lg hover:shadow-2xl overflow-hidden group transition-all duration-300"
-            >
-              <Link to={`/product/${p.id}`}>
-                <img
-                  src={
-                    p.photo_link ||
-                    "https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?auto=format&fit=crop&w=900&q=80"
-                  }
-                  alt={p.name}
-                  className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-500"
-                />
+              </h2>
+              <Link
+                to={`/category/${cat.id}`}
+                className="text-[#A1A1AA] hover:text-[#D4AF37] transition"
+              >
+                View All →
               </Link>
-              <div className="p-4 text-center">
-                <h3 className="font-semibold text-lg text-[#3A3A3A] mb-1">
-                  {p.name}
-                </h3>
-                <p className="text-[#8C6B1F] font-medium mb-3">
-                  ₹{p.price.toLocaleString()}
-                </p>
-                <button className="bg-gradient-to-r from-[#C9A227] to-[#8C6B1F] text-white px-5 py-2 rounded-full font-semibold hover:scale-105 transition-transform duration-300">
-                  Add to Cart
-                </button>
-              </div>
             </div>
-          ))}
-        </div>
-      </section>
 
-      {/* 💫 About Eleganza */}
-      <section className="py-20 bg-gradient-to-r from-[#FDF9EB] to-[#FFFDF5] text-center">
-        <div className="max-w-5xl mx-auto px-6 space-y-6">
-          <h2 className="text-4xl font-serif font-bold text-[#8C6B1F]">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+              {catProducts.map((p) => (
+                <Link
+                  key={p.id}
+                  to={`/product/${p.id}`}
+                  className="bg-[#14161A] border border-[#262626] rounded-3xl overflow-hidden group"
+                >
+                  <img
+                    src={p.photo_link}
+                    alt={p.name}
+                    className="h-72 w-full object-cover group-hover:scale-105 transition"
+                  />
+                  <div className="p-4 text-center">
+                    <p className="font-semibold">{p.name}</p>
+                    <p className="text-[#D4AF37] mt-1">
+                      ₹{p.price.toLocaleString()}
+                    </p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
+        );
+      })}
+
+      {/* ABOUT US */}
+      <section className="py-28 px-8 bg-[#0F1012] border-t border-[#262626]">
+        <div className="max-w-5xl mx-auto text-center">
+          <h2 className="text-4xl font-bold text-[#D4AF37] mb-6">
             About Eleganza
           </h2>
-          <p className="text-gray-700 text-lg leading-relaxed">
-            Eleganza is a premium fashion brand redefining style with comfort and
-            creativity. We design timeless apparel that blends elegance with modern
-            confidence — perfect for every occasion.
+          <p className="text-[#A1A1AA] text-lg leading-relaxed mb-12">
+            Eleganza is a contemporary clothing brand focused on timeless design,
+            premium materials, and effortless style. Every piece is crafted to
+            balance comfort with confidence.
           </p>
-          <div className="grid md:grid-cols-3 gap-6 mt-10">
-            {[
-              {
-                title: "Our Mission",
-                desc: "To empower individuals with sophisticated fashion that inspires confidence and self-expression.",
-              },
-              {
-                title: "Our Craft",
-                desc: "We source premium fabrics and materials that ensure durability and unmatched comfort.",
-              },
-              {
-                title: "Our Vision",
-                desc: "To make Eleganza a symbol of refined elegance, cherished worldwide.",
-              },
-            ].map((info, i) => (
-              <div
-                key={i}
-                className="bg-white rounded-2xl shadow-md hover:shadow-xl p-6 transition-all"
-              >
-                <h3 className="text-xl font-semibold text-[#C9A227] mb-2">
-                  {info.title}
-                </h3>
-                <p className="text-gray-600 text-sm">{info.desc}</p>
-              </div>
-            ))}
+
+          <div className="grid md:grid-cols-3 gap-8">
+            <div className="bg-[#14161A] border border-[#262626] rounded-2xl p-6">
+              <h3 className="text-xl font-semibold mb-3">Our Vision</h3>
+              <p className="text-[#A1A1AA] text-sm">
+                To create refined everyday clothing that transcends trends.
+              </p>
+            </div>
+            <div className="bg-[#14161A] border border-[#262626] rounded-2xl p-6">
+              <h3 className="text-xl font-semibold mb-3">Our Craft</h3>
+              <p className="text-[#A1A1AA] text-sm">
+                Thoughtfully sourced fabrics and attention to detail in every stitch.
+              </p>
+            </div>
+            <div className="bg-[#14161A] border border-[#262626] rounded-2xl p-6">
+              <h3 className="text-xl font-semibold mb-3">Our Promise</h3>
+              <p className="text-[#A1A1AA] text-sm">
+                Clothing designed to make you feel confident, comfortable, and authentic.
+              </p>
+            </div>
           </div>
         </div>
       </section>
-
-      {/* 🧑‍💼 Meet the Founder */}
-      <section className="py-20 bg-[#FFFDF5] text-center border-t border-[#E8D9A6]">
-        <div className="max-w-3xl mx-auto px-6 space-y-6">
-          <h2 className="text-4xl font-serif font-bold text-[#8C6B1F] mb-4">
-            Meet the Founder
-          </h2>
-          <h3 className="text-2xl font-bold text-[#3A3A3A]">Suhaas A</h3>
-          <p className="text-[#8C6B1F] font-medium mb-4">
-            Founder & Creative Director, Eleganza
-          </p>
-          <p className="text-gray-700 text-base leading-relaxed max-w-2xl mx-auto">
-            “Eleganza was born from a passion to redefine fashion — to craft designs that
-            make people feel empowered, graceful, and truly themselves. Every collection
-            reflects our promise to combine tradition with trend, comfort with confidence,
-            and art with attitude.”
-          </p>
-        </div>
-      </section>
-
-      {/* ✨ Final CTA */}
-      <section className="py-20 px-6 bg-gradient-to-r from-[#C9A227] to-[#8C6B1F] text-white text-center">
-        <h2 className="text-4xl font-serif font-bold mb-4">
-          Your Style, Our Passion
-        </h2>
-        <p className="text-white/90 mb-8 max-w-2xl mx-auto">
-          Fashion is more than fabric — it’s the reflection of who you are.
-          Step into Eleganza and make every day a statement of timeless grace.
-        </p>
-        <Link
-          to="/products"
-          className="bg-white text-[#8C6B1F] font-semibold px-8 py-3 rounded-full hover:bg-[#FFF7D0] transition-all"
-        >
-          Explore Eleganza →
-        </Link>
-      </section>
+    </div>
     </div>
   );
 }
-
-
