@@ -1,6 +1,6 @@
 // src/App.jsx
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Navbar from "./components/layout/NavBar";
+import NavBar from "./components/layout/Navbar";
 import Footer from "./components/layout/Footer";
 import ProtectedRoute from "./components/layout/ProtectedRoute";
 import AdminProtectedRoute from "./components/layout/AdminProtectedRoute";
@@ -31,12 +31,7 @@ import AdminOrderTimeline from "./pages/AdminOrderTimeline";
 export default function App() {
   return (
     <Router>
-      {/* Global Layout */}
-      <div className="flex flex-col min-h-screen">
         <Navbar />
-
-        {/* Page Content */}
-        <main className="flex-1 container mx-auto px-4 py-6">
           <Routes>
             {/* 🌍 Public Routes */}
             <Route path="/" element={<Home />} />
@@ -172,10 +167,7 @@ export default function App() {
               }
             />
           </Routes>
-        </main>
-
         <Footer />
-      </div>
     </Router>
   );
 }
