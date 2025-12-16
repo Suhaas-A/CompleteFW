@@ -15,74 +15,85 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row bg-[#F9F9F7]">
-      {/* 🖼️ Left: Image Section (hidden on small screens) */}
-      <div className="hidden md:flex md:w-1/2 bg-gradient-to-br from-[#C9A227] to-[#8C6B1F] text-white items-center justify-center relative overflow-hidden">
-        <div className="text-center px-10">
-          <h1 className="text-5xl font-serif font-bold mb-4 tracking-wide drop-shadow-lg">
+    <div className="min-h-screen flex flex-col md:flex-row bg-black text-white font-sans">
+      
+      {/* LEFT PANEL */}
+      <div className="hidden md:flex md:w-1/2 items-center justify-center relative overflow-hidden">
+        <img
+          src="https://images.unsplash.com/photo-1520975916090-3105956dac38?q=80&w=1400&auto=format&fit=crop"
+          alt="Fashion"
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+
+        {/* image-only gold grading */}
+        <div className="absolute inset-0 bg-gradient-to-br from-[#8A5600]/60 via-[#B67A1E]/35 to-transparent" />
+
+        {/* hard edge fade */}
+        <div className="absolute top-0 right-0 h-full w-24 bg-gradient-to-l from-black to-transparent" />
+
+        <div className="relative text-center px-10">
+          <h1 className="text-5xl font-bold tracking-[0.3em] text-[#D4AF37] mb-4 uppercase">
             Eleganza
           </h1>
-          <p className="text-lg text-white/90 max-w-md mx-auto leading-relaxed">
-            Discover timeless fashion and premium designs curated just for you.
-            Step into the world of <span className="font-semibold">Eleganza</span> — where style meets sophistication.
+          <p className="text-sm text-zinc-300 max-w-md mx-auto leading-relaxed">
+            Step into a world of refined fashion. Curated silhouettes and timeless designs crafted for you.
           </p>
-          <div className="mt-8 flex justify-center">
-            <img
-              src="https://cdn-icons-png.flaticon.com/512/891/891462.png"
-              alt="Fashion illustration"
-              className="w-44 opacity-90 drop-shadow-xl"
-            />
-          </div>
         </div>
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#C9A227]/10 to-[#8C6B1F]/40"></div>
       </div>
 
-      {/* 🧾 Right: Login Form Section */}
+      {/* LOGIN FORM */}
       <div className="flex-1 flex items-center justify-center px-6 py-12">
-        <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-[#E8D9A6] p-8 relative overflow-hidden">
-          {/* Golden Accent Bar */}
-          <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-[#C9A227] to-[#8C6B1F]" />
+        <div className="w-full max-w-md rounded-3xl px-8 py-10 bg-[#0F1012] border border-[rgba(212,175,55,0.30)] shadow-[0_0_40px_rgba(212,175,55,0.18)] relative overflow-hidden">
+          
+          {/* gold top bar */}
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#D4AF37] to-[#B8962E]" />
 
-          {/* Header */}
-          <h2 className="text-3xl font-serif font-bold text-center text-[#8C6B1F] mt-3">
-            Welcome Back 👋
+          <h2 className="text-2xl font-semibold text-[#D4AF37] tracking-[0.25em] uppercase text-center mt-4">
+            Existing Member
           </h2>
-          <p className="text-center text-gray-500 text-sm mt-1 mb-8">
-            Login to continue your fashion journey with <span className="font-semibold text-[#C9A227]">Eleganza</span>
+
+          <p className="text-center text-xs text-[#A1A1AA] mt-1 mb-8 tracking-wide">
+            Sign in to continue
           </p>
 
-          {/* Login Form */}
-          <form onSubmit={submit} className="flex flex-col gap-5">
+          <form onSubmit={submit} className="flex flex-col gap-6">
+            
+            {/* Username */}
             <div>
-              <label className="block text-sm font-semibold text-[#3A3A3A] mb-1">
+              <label className="text-[11px] uppercase tracking-[0.25em] text-[#A1A1AA]">
                 Username
               </label>
               <input
                 type="text"
                 placeholder="Enter your username"
-                className="w-full border border-[#E8D9A6] rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[#C9A227] transition-all"
+                className="mt-2 w-full px-4 py-2.5 rounded-full bg-[#14161A] border border-[rgba(212,175,55,0.30)] placeholder:text-[#71717A] text-sm text-white focus:outline-none focus:border-[#D4AF37]"
                 value={form.username}
-                onChange={(e) => setForm({ ...form, username: e.target.value })}
+                onChange={(e) =>
+                  setForm({ ...form, username: e.target.value })
+                }
                 required
               />
             </div>
 
+            {/* Password */}
             <div>
-              <label className="block text-sm font-semibold text-[#3A3A3A] mb-1">
+              <label className="text-[11px] uppercase tracking-[0.25em] text-[#A1A1AA]">
                 Password
               </label>
               <input
                 type="password"
                 placeholder="Enter your password"
-                className="w-full border border-[#E8D9A6] rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[#C9A227] transition-all"
+                className="mt-2 w-full px-4 py-2.5 rounded-full bg-[#14161A] border border-[rgba(212,175,55,0.30)] placeholder:text-[#71717A] text-sm text-white focus:outline-none focus:border-[#D4AF37]"
                 value={form.password}
-                onChange={(e) => setForm({ ...form, password: e.target.value })}
+                onChange={(e) =>
+                  setForm({ ...form, password: e.target.value })
+                }
                 required
               />
             </div>
 
             {error && (
-              <p className="text-red-600 text-sm text-center bg-red-50 py-2 rounded-md border border-red-200">
+              <p className="text-red-400 text-sm text-center bg-red-900/20 py-2 rounded-md border border-red-600/40">
                 {error}
               </p>
             )}
@@ -90,23 +101,23 @@ export default function Login() {
             <button
               type="submit"
               disabled={loading}
-              className={`w-full py-3 mt-2 text-white font-semibold rounded-lg transition-all duration-300 shadow-md ${
+              className={`w-full py-3 mt-2 text-black font-semibold rounded-full tracking-[0.25em] uppercase transition-all shadow-[0_0_25px_rgba(212,175,55,0.45)] ${
                 loading
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-gradient-to-r from-[#C9A227] to-[#8C6B1F] hover:from-[#D4AF37] hover:to-[#B8871F] hover:shadow-[0_0_12px_rgba(201,162,39,0.4)]"
+                  ? "bg-gray-500 cursor-not-allowed"
+                  : "bg-gradient-to-r from-[#D4AF37] to-[#B8962E] hover:brightness-110"
               }`}
             >
               {loading ? "Logging in..." : "Login"}
             </button>
           </form>
 
-          {/* Extra Links */}
-          <div className="text-center text-sm text-gray-500 mt-6">
+          {/* Links */}
+          <div className="text-center text-xs text-[#A1A1AA] mt-6">
             <p>
               Don’t have an account?{" "}
               <a
                 href="/register"
-                className="text-[#8C6B1F] font-semibold hover:text-[#C9A227] transition-colors"
+                className="text-[#D4AF37] hover:text-[#E6C86E] font-medium"
               >
                 Register here
               </a>
@@ -114,17 +125,16 @@ export default function Login() {
             <p className="mt-3">
               <a
                 href="/forgot-password"
-                className="text-[#8C6B1F] hover:text-[#C9A227] font-medium"
+                className="text-[#D4AF37] hover:text-[#E6C86E] font-medium"
               >
                 Forgot your password?
               </a>
             </p>
           </div>
 
-          {/* Footer note */}
-          <p className="text-center text-xs text-gray-400 mt-8">
-            © {new Date().getFullYear()} Eleganza — Fashioned by{" "}
-            <span className="text-[#8C6B1F] font-semibold">Suhaas A 👑</span>
+          <p className="text-center text-[10px] text-zinc-500 mt-8 tracking-wide">
+            © {new Date().getFullYear()} Eleganza — Designed by{" "}
+            <span className="text-[#D4AF37] font-semibold">Suhaas A</span>
           </p>
         </div>
       </div>
