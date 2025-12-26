@@ -1,10 +1,13 @@
 import { useState } from "react";
 import { useCartContext } from "../contexts/CartContext";
 import { createOrder } from "../api/orderApi";
+import axiosInstance from "../api/axiosInstance";
 import { useNavigate } from "react-router-dom";
+import { useTheme } from "../contexts/ThemeContext";
 
 export default function Checkout() {
   const { cartItems, totalPrice, clearCart } = useCartContext();
+  const { dark } = useTheme();
   const navigate = useNavigate();
 
   const [address, setAddress] = useState("");
@@ -13,7 +16,11 @@ export default function Checkout() {
 
   if (!cartItems.length) {
     return (
-      <div className="min-h-[60vh] flex items-center justify-center text-[#A1A1AA]">
+      <div
+        className={`min-h-[60vh] flex items-center justify-center ${
+          dark ? "text-[#A1A1AA] bg-[#0F1012]" : "text-gray-500 bg-gray-50"
+        }`}
+      >
         Your cart is empty.
       </div>
     );
@@ -30,30 +37,56 @@ export default function Checkout() {
     const products = cartItems.map((i) => [i.id, i.quantity]);
 
     try {
-      // 🔹 ONLINE PAYMENT (mock – safe)
-      if (paymentMethod === "online") {
-        // simulate payment success
-        await new Promise((res) => setTimeout(res, 1200));
-      }
-
-      await createOrder({
+      // 1️⃣ CREATE ORDER
+      const orderRes = await createOrder({
         deliver_address: address,
         products,
-        delivery_link: paymentMethod === "online" ? "paid" : "pending",
+        delivery_link: paymentMethod === "online" ? "pending" : "cod",
         status: "Pending",
       });
 
-      clearCart();
-      navigate("/orders");
+      const orderId = orderRes.data.id;
+
+      // 2️⃣ CASH ON DELIVERY
+      if (paymentMethod === "cod") {
+        clearCart();
+        navigate("/orders");
+        return;
+      }
+
+      // 3️⃣ ONLINE PAYMENT
+      const paymentRes = await axiosInstance.post(
+        "/payments/create-intent",
+        {
+          order_id: orderId,
+          amount: totalPrice,
+          currency: "INR",
+          provider: "cashfree",
+        }
+      );
+
+      const { payment_session_id } = paymentRes.data;
+
+      // 4️⃣ CASHFREE CHECKOUT
+      const cashfree = new window.Cashfree();
+      cashfree.checkout({
+        paymentSessionId: payment_session_id,
+        redirectTarget: "_self",
+      });
+
     } catch (err) {
-      alert("Failed to place order");
-    } finally {
+      console.error(err);
+      alert("Failed to place order or initiate payment");
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#0F1012] text-white px-6 py-12">
+    <div
+      className={`min-h-screen px-6 py-12 ${
+        dark ? "bg-[#0F1012] text-white" : "bg-gray-50 text-gray-900"
+      }`}
+    >
       <div className="max-w-6xl mx-auto">
 
         <h1 className="text-4xl font-bold text-[#D4AF37] mb-10 text-center">
@@ -62,11 +95,17 @@ export default function Checkout() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
 
-          {/* LEFT — ADDRESS + PAYMENT */}
+          {/* LEFT */}
           <div className="lg:col-span-2 space-y-8">
 
             {/* ADDRESS */}
-            <div className="bg-[#14161A] border border-[#262626] rounded-3xl p-6">
+            <div
+              className={`rounded-3xl p-6 border ${
+                dark
+                  ? "bg-[#14161A] border-[#262626]"
+                  : "bg-white border-gray-200 shadow-sm"
+              }`}
+            >
               <h2 className="text-xl font-semibold mb-6">
                 Shipping Address
               </h2>
@@ -76,12 +115,22 @@ export default function Checkout() {
                 onChange={(e) => setAddress(e.target.value)}
                 placeholder="Enter full delivery address"
                 rows={4}
-                className="w-full bg-[#0F1012] border border-[#262626] rounded-xl p-4 text-white placeholder-[#A1A1AA] outline-none"
+                className={`w-full rounded-xl p-4 outline-none ${
+                  dark
+                    ? "bg-[#0F1012] border border-[#262626] text-white placeholder-[#A1A1AA]"
+                    : "bg-gray-100 border border-gray-300 text-gray-900 placeholder-gray-400"
+                }`}
               />
             </div>
 
             {/* PAYMENT */}
-            <div className="bg-[#14161A] border border-[#262626] rounded-3xl p-6">
+            <div
+              className={`rounded-3xl p-6 border ${
+                dark
+                  ? "bg-[#14161A] border-[#262626]"
+                  : "bg-white border-gray-200 shadow-sm"
+              }`}
+            >
               <h2 className="text-xl font-semibold mb-6">
                 Payment Method
               </h2>
@@ -104,20 +153,30 @@ export default function Checkout() {
                   />
                   <span>Online Payment</span>
                   <span className="text-xs text-[#A1A1AA]">
-                    (UPI / Card – simulated)
+                    (UPI / Card via Cashfree)
                   </span>
                 </label>
               </div>
             </div>
           </div>
 
-          {/* RIGHT — ORDER SUMMARY */}
-          <div className="bg-[#14161A] border border-[#262626] rounded-3xl p-6 h-fit">
+          {/* RIGHT */}
+          <div
+            className={`rounded-3xl p-6 border h-fit ${
+              dark
+                ? "bg-[#14161A] border-[#262626]"
+                : "bg-white border-gray-200 shadow-sm"
+            }`}
+          >
             <h2 className="text-xl font-semibold mb-6">
               Order Summary
             </h2>
 
-            <div className="space-y-4 text-sm text-[#A1A1AA]">
+            <div
+              className={`space-y-4 text-sm ${
+                dark ? "text-[#A1A1AA]" : "text-gray-600"
+              }`}
+            >
               {cartItems.map((item) => (
                 <div key={item.id} className="flex justify-between">
                   <span className="truncate">
@@ -129,10 +188,14 @@ export default function Checkout() {
 
               <div className="flex justify-between">
                 <span>Delivery</span>
-                <span className="text-green-400">Free</span>
+                <span className="text-green-500">Free</span>
               </div>
 
-              <div className="border-t border-[#262626] pt-4 flex justify-between text-white font-semibold text-lg">
+              <div
+                className={`border-t pt-4 flex justify-between font-semibold text-lg ${
+                  dark ? "border-[#262626] text-white" : "border-gray-200"
+                }`}
+              >
                 <span>Total</span>
                 <span className="text-[#D4AF37]">₹{totalPrice}</span>
               </div>
@@ -147,7 +210,7 @@ export default function Checkout() {
             >
               {loading
                 ? paymentMethod === "online"
-                  ? "Processing Payment..."
+                  ? "Redirecting to Payment..."
                   : "Placing Order..."
                 : "Place Order"}
             </button>
