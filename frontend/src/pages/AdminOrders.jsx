@@ -11,7 +11,6 @@ import { useNavigate } from "react-router-dom";
 const STATUSES = [
   "Placed",
   "Confirmed",
-  "Processing",
   "Shipped",
   "Out for Delivery",
   "Delivered",
@@ -172,12 +171,13 @@ function OrderStatusModal({ order, onClose, onSuccess }) {
       setLoading(true);
       setError("");
 
-      const res = await axiosInstance.put(
-        `/admin/order/${order.id}/update_status`,
+      const res = await axiosInstance.post(
+        `/order/${order.id}/update_status`,
         { status }
       );
 
       onSuccess(res.data);
+      window.location.reload();
     } catch (err) {
       console.error(err);
       setError("Failed to update order status");
