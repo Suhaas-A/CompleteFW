@@ -35,8 +35,8 @@ export default function Navbar() {
       <nav
         className={`sticky top-0 z-50 border-b ${
           dark
-            ? "bg-[#0F1012] text-white border-[rgba(212,175,55,0.25)]"
-            : "bg-white text-gray-900 border-gray-200"
+            ? "bg-[#0F1012] text-white"
+            : "bg-[#F0F2F5] text-[#111827]"
         }`}
       >
         <div className="max-w-7xl mx-auto flex justify-between items-center px-6 md:px-10 py-4">
@@ -124,7 +124,7 @@ export default function Navbar() {
       className={`sticky top-0 z-50 border-b ${
         dark
           ? "bg-[#0F1012] text-white border-[rgba(212,175,55,0.25)]"
-          : "bg-white text-gray-900 border-gray-200"
+          : "bg-[#F0F2F5] text-gray-900 border-gray-200"
       }`}
     >
       <div className="max-w-7xl mx-auto flex justify-between items-center px-6 md:px-10 py-4">
@@ -233,7 +233,7 @@ export default function Navbar() {
         className={`flex justify-center gap-6 py-3 border-t md:hidden text-sm font-medium ${
           dark
             ? "bg-[#0F1012] border-[rgba(212,175,55,0.25)]"
-            : "bg-white border-gray-200"
+            : "bg-[#F0F2F5] border-gray-200"
         }`}
       >
         <button
@@ -268,3 +268,4 @@ export default function Navbar() {
     </nav>
   );
 }
+
