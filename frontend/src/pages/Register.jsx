@@ -67,7 +67,7 @@ export default function Register() {
             ${
               dark
                 ? "bg-[#0F1012] border-[rgba(212,175,55,0.30)] shadow-[0_0_40px_rgba(212,175,55,0.18)]"
-                : "bg-white border-gray-200 shadow-xl"
+                : "bg-[#F0F2F5] border-gray-200 shadow-xl"
             }`}
         >
           {/* gold top bar */}
@@ -243,3 +243,4 @@ export default function Register() {
     </div>
   );
 }
+
