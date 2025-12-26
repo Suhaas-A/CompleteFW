@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import { useAuthContext } from "../contexts/AuthContext";
+import { useTheme } from "../contexts/ThemeContext";
 
 export default function Home() {
   const [categories, setCategories] = useState([]);
@@ -9,6 +10,7 @@ export default function Home() {
   const [dashboard, setDashboard] = useState(null);
 
   const { user } = useAuthContext();
+  const { dark } = useTheme();
 
   // Detect admin
   const isAdmin =
@@ -65,7 +67,7 @@ export default function Home() {
   }, [isAdmin]);
 
   /* =========================================================
-     🚀 ADMIN DASHBOARD — EXACT PREVIEW UI
+     🚀 ADMIN DASHBOARD — EXACT UI (UNCHANGED)
      ========================================================= */
   if (isAdmin) {
     const topProducts = dashboard?.top_products || [];
@@ -77,11 +79,11 @@ export default function Home() {
     const maxQty = Math.max(...topProducts.map(p => p.quantity_sold), 1);
 
     return (
-      <div className="min-h-screen bg-[#0F1012] text-white p-6">
+      <div className={`min-h-screen p-6 ${dark ? "bg-[#0F1012] text-white" : "bg-gray-100 text-gray-900"}`}>
         <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-5 gap-6">
 
           {/* SIDEBAR */}
-          <aside className="lg:col-span-1 bg-[#14161A] border border-[#262626] rounded-3xl p-6">
+          <aside className={`${dark ? "bg-[#14161A] border-[#262626]" : "bg-white border-gray-200"} border rounded-3xl p-6`}>
             <h1 className="text-xl font-bold text-[#D4AF37] mb-10">
               Eleganza Admin
             </h1>
@@ -97,11 +99,13 @@ export default function Home() {
               ].map((item, i) => (
                 <li
                   key={i}
-                  onClick={function() {window.location = '/admin/' + item}}
-                  className={`px-4 py-2 rounded-xl ${
+                  onClick={() => window.location = "/admin/" + item}
+                  className={`px-4 py-2 rounded-xl cursor-pointer ${
                     i === 0
                       ? "bg-gradient-to-r from-[#D4AF37] to-[#B8962E] text-black font-semibold"
-                      : "text-[#A1A1AA] hover:bg-[#1F2126]"
+                      : dark
+                      ? "text-[#A1A1AA] hover:bg-[#1F2126]"
+                      : "text-gray-600 hover:bg-gray-100"
                   }`}
                 >
                   {item}
@@ -114,42 +118,34 @@ export default function Home() {
           <main className="lg:col-span-4 space-y-6">
 
             {/* TOP BAR */}
-            <div className="bg-[#14161A] border border-[#262626] rounded-3xl p-6 flex justify-between items-center">
+            <div className={`${dark ? "bg-[#14161A] border-[#262626]" : "bg-white border-gray-200"} border rounded-3xl p-6 flex justify-between items-center`}>
               <h2 className="text-xl font-semibold text-[#D4AF37]">
                 Welcome back, Admin 👑
               </h2>
               <input
                 placeholder="Search dashboard"
-                className="bg-[#0F1012] border border-[#262626] rounded-full px-4 py-2 text-sm"
+                className={`${dark ? "bg-[#0F1012] border-[#262626] text-white" : "bg-gray-100 border-gray-300"} border rounded-full px-4 py-2 text-sm`}
               />
             </div>
 
             {/* STATS */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              <div className="bg-[#14161A] border border-[#262626] rounded-3xl p-6">
-                <p className="text-sm text-[#A1A1AA]">Total Revenue</p>
-                <h3 className="text-3xl font-bold text-[#D4AF37] mt-2">
-                  ₹{totalRevenue.toLocaleString()}
-                </h3>
-              </div>
-
-              <div className="bg-[#14161A] border border-[#262626] rounded-3xl p-6">
-                <p className="text-sm text-[#A1A1AA]">Total Orders</p>
-                <h3 className="text-3xl font-bold text-[#D4AF37] mt-2">
-                  {topProducts.length}
-                </h3>
-              </div>
-
-              <div className="bg-[#14161A] border border-[#262626] rounded-3xl p-6">
-                <p className="text-sm text-[#A1A1AA]">Items Sold</p>
-                <h3 className="text-3xl font-bold text-[#D4AF37] mt-2">
-                  {totalSold}
-                </h3>
-              </div>
+              {[
+                ["Total Revenue", `₹${totalRevenue.toLocaleString()}`],
+                ["Total Orders", topProducts.length],
+                ["Items Sold", totalSold],
+              ].map(([label, value], i) => (
+                <div key={i} className={`${dark ? "bg-[#14161A] border-[#262626]" : "bg-white border-gray-200"} border rounded-3xl p-6`}>
+                  <p className={`text-sm ${dark ? "text-[#A1A1AA]" : "text-gray-500"}`}>{label}</p>
+                  <h3 className="text-3xl font-bold text-[#D4AF37] mt-2">
+                    {value}
+                  </h3>
+                </div>
+              ))}
             </div>
 
             {/* ANALYTICS */}
-            <div className="bg-[#14161A] border border-[#262626] rounded-3xl p-6">
+            <div className={`${dark ? "bg-[#14161A] border-[#262626]" : "bg-white border-gray-200"} border rounded-3xl p-6`}>
               <h3 className="font-semibold mb-6 text-[#D4AF37]">
                 Sales Analytics
               </h3>
@@ -157,8 +153,8 @@ export default function Home() {
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
                 {/* PIE */}
-                <div className="bg-[#0F1012] border border-[#262626] rounded-2xl p-4 flex flex-col items-center">
-                  <p className="text-sm text-[#A1A1AA] mb-4">
+                <div className={`${dark ? "bg-[#0F1012] border-[#262626]" : "bg-gray-50 border-gray-200"} border rounded-2xl p-4 flex flex-col items-center`}>
+                  <p className={`text-sm mb-4 ${dark ? "text-[#A1A1AA]" : "text-gray-500"}`}>
                     Product Share
                   </p>
                   <div
@@ -173,8 +169,8 @@ export default function Home() {
                 </div>
 
                 {/* BAR */}
-                <div className="lg:col-span-2 bg-[#0F1012] border border-[#262626] rounded-2xl p-4">
-                  <p className="text-sm text-[#A1A1AA] mb-4">
+                <div className={`${dark ? "bg-[#0F1012] border-[#262626]" : "bg-gray-50 border-gray-200"} border rounded-2xl p-4 lg:col-span-2`}>
+                  <p className={`text-sm mb-4 ${dark ? "text-[#A1A1AA]" : "text-gray-500"}`}>
                     Top Products
                   </p>
 
@@ -187,7 +183,7 @@ export default function Home() {
                           }}
                           className="w-full bg-gradient-to-t from-[#B8962E] to-[#D4AF37] rounded-t-lg"
                         />
-                        <p className="text-xs text-center text-[#A1A1AA] mt-2">
+                        <p className={`text-xs text-center mt-2 ${dark ? "text-[#A1A1AA]" : "text-gray-500"}`}>
                           #{p.product_id}
                         </p>
                       </div>
@@ -199,7 +195,7 @@ export default function Home() {
             </div>
 
             {/* RECENT ORDERS */}
-            <div className="bg-[#14161A] border border-[#262626] rounded-3xl p-6">
+            <div className={`${dark ? "bg-[#14161A] border-[#262626]" : "bg-white border-gray-200"} border rounded-3xl p-6`}>
               <h3 className="font-semibold mb-4 text-[#D4AF37]">
                 Top Selling Products
               </h3>
@@ -208,9 +204,9 @@ export default function Home() {
                 {topProducts.slice(0, 5).map((p) => (
                   <div
                     key={p.product_id}
-                    className="flex justify-between items-center bg-[#0F1012] border border-[#262626] rounded-xl px-4 py-3"
+                    className={`${dark ? "bg-[#0F1012] border-[#262626]" : "bg-gray-50 border-gray-200"} border rounded-xl px-4 py-3 flex justify-between items-center`}
                   >
-                    <span className="text-[#A1A1AA]">
+                    <span className={dark ? "text-[#A1A1AA]" : "text-gray-600"}>
                       Product #{p.product_id}
                     </span>
                     <span className="text-[#D4AF37] font-semibold">
@@ -227,10 +223,9 @@ export default function Home() {
     );
   }
 
-  /* ================= USER HOME (AS IS) ================= */
+  /* ================= USER HOME ================= */
   return (
-    <div className="bg-[#0F1012] text-white">
-      <div className="bg-[#0F1012] text-white overflow-x-hidden">
+    <div className={`${dark ? "bg-[#0F1012] text-white" : "bg-white text-gray-900"} overflow-x-hidden`}>
 
       {/* HERO */}
       <section className="relative min-h-screen flex items-center justify-center px-8">
@@ -242,7 +237,7 @@ export default function Home() {
           <h1 className="text-6xl md:text-7xl font-extrabold mb-6">
             Elevate Your <span className="text-[#D4AF37]">Style</span>
           </h1>
-          <p className="text-[#A1A1AA] text-lg max-w-2xl mx-auto mb-10">
+          <p className={`${dark ? "text-[#A1A1AA]" : "text-gray-600"} text-lg max-w-2xl mx-auto mb-10`}>
             Eleganza creates refined everyday wear with premium fabrics,
             timeless silhouettes, and confident design.
           </p>
@@ -255,7 +250,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* CATEGORY-WISE PRODUCT SHOWCASE */}
+      {/* CATEGORY SHOWCASE */}
       {categories.map((cat) => {
         const catProducts = featured
           .filter((p) => p.category_id === cat.id)
@@ -271,7 +266,7 @@ export default function Home() {
               </h2>
               <Link
                 to={`/category/${cat.id}`}
-                className="text-[#A1A1AA] hover:text-[#D4AF37] transition"
+                className={`${dark ? "text-[#A1A1AA]" : "text-gray-500"} hover:text-[#D4AF37] transition`}
               >
                 View All →
               </Link>
@@ -282,7 +277,7 @@ export default function Home() {
                 <Link
                   key={p.id}
                   to={`/product/${p.id}`}
-                  className="bg-[#14161A] border border-[#262626] rounded-3xl overflow-hidden group"
+                  className={`${dark ? "bg-[#14161A] border-[#262626]" : "bg-white border-gray-200 shadow-sm"} border rounded-3xl overflow-hidden group`}
                 >
                   <img
                     src={p.photo_link}
@@ -303,40 +298,36 @@ export default function Home() {
       })}
 
       {/* ABOUT US */}
-      <section className="py-28 px-8 bg-[#0F1012] border-t border-[#262626]">
+      <section className={`py-28 px-8 border-t ${dark ? "bg-[#0F1012] border-[#262626]" : "bg-gray-50 border-gray-200"}`}>
         <div className="max-w-5xl mx-auto text-center">
           <h2 className="text-4xl font-bold text-[#D4AF37] mb-6">
             About Eleganza
           </h2>
-          <p className="text-[#A1A1AA] text-lg leading-relaxed mb-12">
+          <p className={`${dark ? "text-[#A1A1AA]" : "text-gray-600"} text-lg leading-relaxed mb-12`}>
             Eleganza is a contemporary clothing brand focused on timeless design,
             premium materials, and effortless style. Every piece is crafted to
             balance comfort with confidence.
           </p>
 
           <div className="grid md:grid-cols-3 gap-8">
-            <div className="bg-[#14161A] border border-[#262626] rounded-2xl p-6">
-              <h3 className="text-xl font-semibold mb-3">Our Vision</h3>
-              <p className="text-[#A1A1AA] text-sm">
-                To create refined everyday clothing that transcends trends.
-              </p>
-            </div>
-            <div className="bg-[#14161A] border border-[#262626] rounded-2xl p-6">
-              <h3 className="text-xl font-semibold mb-3">Our Craft</h3>
-              <p className="text-[#A1A1AA] text-sm">
-                Thoughtfully sourced fabrics and attention to detail in every stitch.
-              </p>
-            </div>
-            <div className="bg-[#14161A] border border-[#262626] rounded-2xl p-6">
-              <h3 className="text-xl font-semibold mb-3">Our Promise</h3>
-              <p className="text-[#A1A1AA] text-sm">
-                Clothing designed to make you feel confident, comfortable, and authentic.
-              </p>
-            </div>
+            {[
+              ["Our Vision", "To create refined everyday clothing that transcends trends."],
+              ["Our Craft", "Thoughtfully sourced fabrics and attention to detail in every stitch."],
+              ["Our Promise", "Clothing designed to make you feel confident, comfortable, and authentic."],
+            ].map(([title, text], i) => (
+              <div
+                key={i}
+                className={`${dark ? "bg-[#14161A] border-[#262626]" : "bg-white border-gray-200 shadow-sm"} border rounded-2xl p-6`}
+              >
+                <h3 className="text-xl font-semibold mb-3">{title}</h3>
+                <p className={`${dark ? "text-[#A1A1AA]" : "text-gray-600"} text-sm`}>
+                  {text}
+                </p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
-    </div>
     </div>
   );
 }
