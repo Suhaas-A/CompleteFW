@@ -149,7 +149,7 @@ export default function ViewProducts() {
   return (
     <div
       className={`min-h-screen px-6 py-12 ${
-        dark ? "bg-[#0F1012] text-white" : "bg-white text-gray-900"
+        dark ? "bg-[#0F1012] text-white" : "bg-[#F0F2F5] text-gray-900"
       }`}
     >
       <h2 className="text-4xl font-bold text-center text-[#D4AF37] mb-3">
@@ -204,7 +204,7 @@ export default function ViewProducts() {
               className={`rounded-lg px-4 py-2 text-sm border ${
                 dark
                   ? "bg-[#0F1012] border-[#262626] text-white"
-                  : "bg-white border-gray-300"
+                  : "bg-[#F0F2F5] border-gray-300"
               }`}
             >
               <option value="all">Price: All</option>
@@ -219,7 +219,7 @@ export default function ViewProducts() {
               className={`rounded-lg px-4 py-2 text-sm border ${
                 dark
                   ? "bg-[#0F1012] border-[#262626] text-white"
-                  : "bg-white border-gray-300"
+                  : "bg-[#F0F2F5] border-gray-300"
               }`}
             >
               <option value="none">Sort By</option>
@@ -238,7 +238,7 @@ export default function ViewProducts() {
                 className={`rounded-3xl overflow-hidden transition-all ${
                   dark
                     ? "bg-[#14161A] border border-[#262626] shadow-[0_10px_30px_rgba(0,0,0,0.4)] hover:shadow-[0_25px_60px_rgba(212,175,55,0.15)]"
-                    : "bg-white border border-gray-200 shadow-sm hover:shadow-md"
+                    : "bg-[#F0F2F5] border border-gray-200 shadow-sm hover:shadow-md"
                 }`}
               >
                 <div
@@ -302,3 +302,4 @@ export default function ViewProducts() {
     </div>
   );
 }
+
