@@ -21,10 +21,10 @@ from sqlalchemy.orm import Session
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 
-from db.database import get_db
-from model import tables
-from schemas import data
-from core.config import settings
+from backend.db.database import get_db
+from backend.model import tables
+from backend.schemas import data
+from backend.core.config import settings
 
 router = APIRouter()
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -152,12 +152,12 @@ def get_my_details(current_user: tables.Users = Depends(get_current_active_user)
 # ------------------------------ Product Routes --------------------------- #
 
 @router.get("/all_products", tags=["products"])
-def get_all_products(db: Session = Depends(get_db), current_user=Depends(get_current_active_user)):
+def get_all_products(db: Session = Depends(get_db)):
     return db.query(tables.Products).all()
 
 
 @router.get("/product/{product_id}", tags=["products"])
-def get_product(product_id: int, db: Session = Depends(get_db), current_user=Depends(get_current_active_user)):
+def get_product(product_id: int, db: Session = Depends(get_db)):
     product = db.query(tables.Products).filter(tables.Products.id == product_id).first()
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
