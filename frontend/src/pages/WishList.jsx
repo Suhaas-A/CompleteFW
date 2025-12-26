@@ -94,7 +94,7 @@ export default function Wishlist() {
   return (
     <div
       className={`min-h-screen px-6 py-14 ${
-        dark ? "bg-[#0F1012] text-white" : "bg-white text-gray-900"
+        dark ? "bg-[#0F1012] text-white" : "bg-[#F0F2F5] text-gray-900"
       }`}
     >
       <div className="max-w-6xl mx-auto">
@@ -118,7 +118,7 @@ export default function Wishlist() {
                 className={`rounded-3xl overflow-hidden transition ${
                   dark
                     ? "bg-[#14161A] border border-[#262626] hover:shadow-xl"
-                    : "bg-white border border-gray-200 shadow-sm hover:shadow-md"
+                    : "bg-[#F0F2F5] border border-gray-200 shadow-sm hover:shadow-md"
                 }`}
               >
                 {/* IMAGE */}
