@@ -8,8 +8,8 @@ export default function Footer() {
     <footer
       className={`py-10 border-t ${
         dark
-          ? "bg-[#0F1012] text-white border-[rgba(212,175,55,0.25)]"
-          : "bg-white text-gray-900 border-gray-200"
+          ? "bg-[#0F1012] text-white"
+          : "bg-[#F0F2F5] text-[#111827]"
       }`}
     >
       <div className="max-w-7xl mx-auto px-6 text-center md:text-left grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -117,3 +117,4 @@ export default function Footer() {
     </footer>
   );
 }
+
