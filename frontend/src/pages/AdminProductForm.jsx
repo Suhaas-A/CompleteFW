@@ -39,7 +39,7 @@ export default function AdminProductForm() {
   const API_URL = "http://127.0.0.1:8000/api";
   const token = localStorage.getItem("access_token");
 
-  // ✅ Fetch metadata for dropdowns
+  /* ---------------- FETCH METADATA ---------------- */
   useEffect(() => {
     (async () => {
       try {
@@ -73,34 +73,33 @@ export default function AdminProductForm() {
           coupons: responses[7].data,
         });
       } catch (err) {
-        console.error("Error fetching metadata:", err);
+        console.error("Metadata error", err);
       }
     })();
   }, [token]);
 
-  // ✅ Load existing product if editing
+  /* ---------------- LOAD PRODUCT ---------------- */
   useEffect(() => {
     if (!isEdit) return;
     (async () => {
       try {
         const res = await getProductById(id);
-        const data = res.data;
+        const d = res.data;
         setForm({
-          name: data.name || "",
-          price: data.price || 0,
-          description: data.description || "",
-          photo_link: data.photo_link || "",
-          category_id: data.category_id || null,
-          size_id: data.size_id || null,
-          coupon_id: data.coupon_id || null,
-          discount_id: data.discount_id || null,
-          pattern_id: data.pattern_id || null,
-          color_id: data.color_id || null,
-          material_id: data.material_id || null,
-          pack_id: data.pack_id || null,
+          name: d.name || "",
+          price: d.price || 0,
+          description: d.description || "",
+          photo_link: d.photo_link || "",
+          category_id: d.category_id || null,
+          size_id: d.size_id || null,
+          coupon_id: d.coupon_id || null,
+          discount_id: d.discount_id || null,
+          pattern_id: d.pattern_id || null,
+          color_id: d.color_id || null,
+          material_id: d.material_id || null,
+          pack_id: d.pack_id || null,
         });
       } catch (err) {
-        console.error(err);
         alert("Failed to load product");
       } finally {
         setLoading(false);
@@ -108,7 +107,7 @@ export default function AdminProductForm() {
     })();
   }, [id]);
 
-  // ✅ Handle submit
+  /* ---------------- SUBMIT ---------------- */
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -116,16 +115,14 @@ export default function AdminProductForm() {
       else await createProduct(form);
       alert("✅ Product saved successfully!");
       navigate("/admin/products");
-    } catch (err) {
-      console.error(err);
+    } catch {
       alert("❌ Save failed");
     }
   };
 
-  // ✅ Reusable dropdown renderer
-  const renderSelect = (label, key, items, displayField = "name") => (
+  const renderSelect = (label, key, items) => (
     <div>
-      <label className="block text-sm font-semibold text-[#3A3A3A] mb-1">
+      <label className="text-xs uppercase tracking-wide text-[#D4AF37]">
         {label}
       </label>
       <select
@@ -133,12 +130,12 @@ export default function AdminProductForm() {
         onChange={(e) =>
           setForm({ ...form, [key]: e.target.value ? Number(e.target.value) : null })
         }
-        className="border border-[#E0D8C3] focus:ring-2 focus:ring-[#C9A227] p-2 rounded-lg w-full outline-none"
+        className="mt-2 w-full rounded-xl bg-[#0F1012] border border-[#262626] px-4 py-2 text-white"
       >
         <option value="">Select {label}</option>
-        {items.map((item) => (
-          <option key={item.id} value={item.id}>
-            {item[displayField]}
+        {items.map((i) => (
+          <option key={i.id} value={i.id}>
+            {i.name}
           </option>
         ))}
       </select>
@@ -148,67 +145,64 @@ export default function AdminProductForm() {
   if (loading)
     return (
       <AdminLayout>
-        <div className="p-6 text-center text-[#3A3A3A]">Loading product details...</div>
+        <p className="text-center py-20 text-[#A1A1AA]">Loading product…</p>
       </AdminLayout>
     );
 
   return (
     <AdminLayout>
-      <div className="bg-[#F9F9F7] p-8 rounded-2xl shadow-xl border border-[#EDE6D8] max-w-5xl mx-auto">
-        {/* Header */}
-        <h2 className="text-3xl font-serif font-semibold text-[#3A3A3A] mb-8 border-b-4 border-[#C9A227] inline-block pb-2">
-          {isEdit ? "Edit Product" : "Create New Product"}
-        </h2>
+      <div className="bg-[#0F1012] border border-[#262626] p-10 shadow-2xl">
+        <h1 className="text-3xl font-bold text-[#D4AF37] mb-10">
+          {isEdit ? "Edit Product" : "Create Product"}
+        </h1>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="grid gap-6">
-          {/* Top Section */}
-          <div className="grid sm:grid-cols-2 gap-6">
-            <div className="space-y-3">
+        <form onSubmit={handleSubmit} className="space-y-10">
+          {/* TOP */}
+          <div className="grid md:grid-cols-2 gap-10">
+            <div className="space-y-4">
               <input
-                required
                 placeholder="Product Name"
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
-                className="border border-[#E0D8C3] focus:ring-2 focus:ring-[#C9A227] p-3 rounded-lg w-full outline-none"
+                className="input"
               />
               <input
-                required
                 type="number"
                 placeholder="Price"
                 value={form.price}
                 onChange={(e) => setForm({ ...form, price: Number(e.target.value) })}
-                className="border border-[#E0D8C3] focus:ring-2 focus:ring-[#C9A227] p-3 rounded-lg w-full outline-none"
+                className="input"
               />
               <textarea
-                placeholder="Product Description"
+                placeholder="Description"
                 value={form.description}
                 onChange={(e) => setForm({ ...form, description: e.target.value })}
-                className="border border-[#E0D8C3] focus:ring-2 focus:ring-[#C9A227] p-3 rounded-lg w-full h-32 resize-none outline-none"
+                rows={5}
+                className="input resize-none"
               />
               <input
-                placeholder="Photo URL"
+                placeholder="Image URL"
                 value={form.photo_link}
                 onChange={(e) => setForm({ ...form, photo_link: e.target.value })}
-                className="border border-[#E0D8C3] focus:ring-2 focus:ring-[#C9A227] p-3 rounded-lg w-full outline-none"
+                className="input"
               />
             </div>
 
-            {/* Live Image Preview */}
+            {/* PREVIEW */}
             <div className="flex items-center justify-center">
               <img
                 src={
                   form.photo_link ||
                   "https://upload.wikimedia.org/wikipedia/commons/a/ac/No_image_available.svg"
                 }
-                alt="Product preview"
-                className="rounded-xl border border-[#EDE6D8] shadow-md object-contain h-64 w-64 bg-white"
+                alt="preview"
+                className="w-72 h-72 object-cover rounded-2xl border border-[#262626]"
               />
             </div>
           </div>
 
-          {/* Dropdown Metadata */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {/* DROPDOWNS */}
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {renderSelect("Category", "category_id", options.categories)}
             {renderSelect("Color", "color_id", options.colors)}
             {renderSelect("Size", "size_id", options.sizes)}
@@ -219,23 +213,36 @@ export default function AdminProductForm() {
             {renderSelect("Coupon", "coupon_id", options.coupons)}
           </div>
 
-          {/* Buttons */}
-          <div className="flex flex-wrap gap-3 mt-6">
-            <button
-              className="bg-gradient-to-r from-[#C9A227] to-[#8C6B1F] text-white px-6 py-2.5 rounded-lg font-semibold hover:shadow-[0_0_10px_rgba(201,162,39,0.4)] transition-all duration-300"
-            >
+          {/* ACTIONS */}
+          <div className="flex gap-4">
+            <button className="bg-gradient-to-r from-[#D4AF37] to-[#B8962E] text-black px-8 py-3 rounded-full font-semibold">
               {isEdit ? "Update Product" : "Create Product"}
             </button>
             <button
               type="button"
               onClick={() => navigate(-1)}
-              className="px-6 py-2.5 rounded-lg border border-[#C9A227]/60 text-[#3A3A3A] font-medium hover:bg-[#F3EBD0] transition-all duration-300"
+              className="px-8 py-3 rounded-full border border-[#262626] text-[#A1A1AA]"
             >
               Cancel
             </button>
           </div>
         </form>
       </div>
+
+      <style jsx>{`
+        .input {
+          width: 100%;
+          padding: 12px 14px;
+          border-radius: 14px;
+          background: #14161A;
+          border: 1px solid #262626;
+          color: white;
+          outline: none;
+        }
+        .input::placeholder {
+          color: #71717A;
+        }
+      `}</style>
     </AdminLayout>
   );
 }
