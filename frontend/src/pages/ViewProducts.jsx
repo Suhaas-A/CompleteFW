@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { getAllProducts } from "../api/productApi";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import SideFilterBar from "../components/filters/SideFilterBar";
 
 import { useWishlistContext } from "../contexts/Wishlist";
 import { useCartContext } from "../contexts/CartContext";
+import { useTheme } from "../contexts/ThemeContext";
 
 export default function ViewProducts() {
   const [products, setProducts] = useState([]);
@@ -29,17 +30,21 @@ export default function ViewProducts() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const searchQuery = searchParams.get("search") || "";
+
   const { handleAddToWishlist } = useWishlistContext();
   const { handleAddToCart } = useCartContext();
+  const { dark } = useTheme();
 
-  // FETCH PRODUCTS (UNCHANGED)
+  /* ============================================================
+     FETCH PRODUCTS
+     ============================================================ */
   useEffect(() => {
     (async () => {
       try {
         const res = await getAllProducts();
-        const data = res.data || [];
-        setProducts(data);
-        setFiltered(data);
+        setProducts(res.data || []);
       } catch {
         setError("Failed to load products");
       } finally {
@@ -50,15 +55,26 @@ export default function ViewProducts() {
 
   const applyMetaFilters = (f) => setMetaFilters(f);
 
-  // FILTER + SORT (UNCHANGED)
+  /* ============================================================
+     SEARCH + FILTER + SORT
+     ============================================================ */
   useEffect(() => {
     let temp = [...products];
 
+    // 🔍 SEARCH (FROM NAVBAR)
+    if (searchQuery.trim()) {
+      temp = temp.filter((p) =>
+        p.name.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+
+    // 💰 PRICE FILTER
     if (priceFilter === "low") temp = temp.filter((p) => p.price < 500);
     else if (priceFilter === "mid")
       temp = temp.filter((p) => p.price >= 500 && p.price <= 1000);
     else if (priceFilter === "high") temp = temp.filter((p) => p.price > 1000);
 
+    // 🧩 META FILTERS
     const match = (val, list) =>
       !list.length ? true : val != null && list.includes(Number(val));
 
@@ -74,6 +90,7 @@ export default function ViewProducts() {
         match(p.coupon_id, metaFilters.coupons)
     );
 
+    // ↕️ SORT
     if (sortBy === "price-asc") temp.sort((a, b) => a.price - b.price);
     else if (sortBy === "price-desc") temp.sort((a, b) => b.price - a.price);
     else if (sortBy === "name-asc")
@@ -82,8 +99,11 @@ export default function ViewProducts() {
       temp.sort((a, b) => b.name.localeCompare(a.name));
 
     setFiltered(temp);
-  }, [products, metaFilters, priceFilter, sortBy]);
+  }, [products, metaFilters, priceFilter, sortBy, searchQuery]);
 
+  /* ============================================================
+     ACTIONS
+     ============================================================ */
   const handleWishlist = async (id) => {
     try {
       await handleAddToWishlist(id);
@@ -102,16 +122,56 @@ export default function ViewProducts() {
     }
   };
 
+  /* ============================================================
+     STATES
+     ============================================================ */
   if (loading)
-    return <div className="text-center py-20 text-[#A1A1AA]">Loading…</div>;
-  if (error)
-    return <div className="text-center py-20 text-red-500">{error}</div>;
+    return (
+      <div
+        className={`text-center py-20 ${
+          dark ? "text-[#A1A1AA]" : "text-gray-500"
+        }`}
+      >
+        Loading…
+      </div>
+    );
 
+  if (error)
+    return (
+      <div className="text-center py-20 text-red-500">
+        {error}
+      </div>
+    );
+
+  /* ============================================================
+     UI
+     ============================================================ */
   return (
-    <div className="min-h-screen bg-[#0F1012] text-white px-6 py-12">
-      <h2 className="text-4xl font-bold text-center text-[#D4AF37] mb-12">
+    <div
+      className={`min-h-screen px-6 py-12 ${
+        dark ? "bg-[#0F1012] text-white" : "bg-white text-gray-900"
+      }`}
+    >
+      <h2 className="text-4xl font-bold text-center text-[#D4AF37] mb-3">
         Shop Collection
       </h2>
+
+      {searchQuery && (
+        <p
+          className={`text-center mb-10 ${
+            dark ? "text-[#A1A1AA]" : "text-gray-500"
+          }`}
+        >
+          Showing results for{" "}
+          <span
+            className={`font-semibold ${
+              dark ? "text-white" : "text-gray-900"
+            }`}
+          >
+            “{searchQuery}”
+          </span>
+        </p>
+      )}
 
       <div className="lg:hidden mb-6">
         <button
@@ -131,11 +191,21 @@ export default function ViewProducts() {
 
         {/* PRODUCTS */}
         <div className="lg:col-span-3">
-          <div className="bg-[#14161A] border border-[#262626] rounded-2xl p-4 flex flex-wrap gap-4 justify-between mb-10">
+          <div
+            className={`rounded-2xl p-4 flex flex-wrap gap-4 justify-between mb-10 border ${
+              dark
+                ? "bg-[#14161A] border-[#262626]"
+                : "bg-gray-50 border-gray-200"
+            }`}
+          >
             <select
               value={priceFilter}
               onChange={(e) => setPriceFilter(e.target.value)}
-              className="bg-[#0F1012] border border-[#262626] rounded-lg px-4 py-2 text-sm"
+              className={`rounded-lg px-4 py-2 text-sm border ${
+                dark
+                  ? "bg-[#0F1012] border-[#262626] text-white"
+                  : "bg-white border-gray-300"
+              }`}
             >
               <option value="all">Price: All</option>
               <option value="low">Below ₹500</option>
@@ -146,7 +216,11 @@ export default function ViewProducts() {
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="bg-[#0F1012] border border-[#262626] rounded-lg px-4 py-2 text-sm"
+              className={`rounded-lg px-4 py-2 text-sm border ${
+                dark
+                  ? "bg-[#0F1012] border-[#262626] text-white"
+                  : "bg-white border-gray-300"
+              }`}
             >
               <option value="none">Sort By</option>
               <option value="price-asc">Price ↑</option>
@@ -156,23 +230,17 @@ export default function ViewProducts() {
             </select>
           </div>
 
-          {/* PRODUCT GRID */}
+          {/* GRID */}
           <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-8">
             {filtered.map((p) => (
               <div
                 key={p.id}
-                className="
-                  bg-[#14161A]
-                  border border-[#262626]
-                  rounded-3xl
-                  overflow-hidden
-                  shadow-[0_10px_30px_rgba(0,0,0,0.4)]
-                  hover:shadow-[0_25px_60px_rgba(212,175,55,0.15)]
-                  hover:-translate-y-1
-                  transition-all
-                "
+                className={`rounded-3xl overflow-hidden transition-all ${
+                  dark
+                    ? "bg-[#14161A] border border-[#262626] shadow-[0_10px_30px_rgba(0,0,0,0.4)] hover:shadow-[0_25px_60px_rgba(212,175,55,0.15)]"
+                    : "bg-white border border-gray-200 shadow-sm hover:shadow-md"
+                }`}
               >
-                {/* IMAGE */}
                 <div
                   onClick={() => navigate(`/product/${p.id}`)}
                   className="relative group cursor-pointer"
@@ -189,7 +257,6 @@ export default function ViewProducts() {
                   <div className="absolute inset-0 bg-black/10 group-hover:bg-black/30 transition" />
                 </div>
 
-                {/* INFO */}
                 <div className="p-4 flex flex-col justify-between h-[170px]">
                   <h3 className="text-lg font-semibold truncate">
                     {p.name}
@@ -210,12 +277,7 @@ export default function ViewProducts() {
 
                       <button
                         onClick={() => handleCart(p.id)}
-                        className="
-                          bg-gradient-to-r from-[#D4AF37] to-[#B8962E]
-                          text-black px-4 py-2 rounded-full
-                          text-sm font-semibold
-                          hover:brightness-110 transition
-                        "
+                        className="bg-gradient-to-r from-[#D4AF37] to-[#B8962E] text-black px-4 py-2 rounded-full text-sm font-semibold hover:brightness-110 transition"
                       >
                         Add to Cart
                       </button>
@@ -227,8 +289,12 @@ export default function ViewProducts() {
           </div>
 
           {filtered.length === 0 && (
-            <div className="text-[#A1A1AA] mt-16 text-center">
-              No products match your filters.
+            <div
+              className={`mt-16 text-center ${
+                dark ? "text-[#A1A1AA]" : "text-gray-500"
+              }`}
+            >
+              No products match your search or filters.
             </div>
           )}
         </div>
