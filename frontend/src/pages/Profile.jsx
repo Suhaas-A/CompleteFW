@@ -1,9 +1,11 @@
 // src/pages/Profile.jsx
 import { useEffect, useState } from "react";
 import { useAuthContext } from "../contexts/AuthContext";
+import { useTheme } from "../contexts/ThemeContext";
 
 export default function Profile() {
   const { user, loadingAuth } = useAuthContext();
+  const { dark } = useTheme();
 
   const [form, setForm] = useState({
     username: "",
@@ -26,9 +28,15 @@ export default function Profile() {
     }
   }, [user]);
 
+  /* ================= STATES ================= */
+
   if (loadingAuth) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-[#A1A1AA]">
+      <div
+        className={`min-h-screen flex items-center justify-center ${
+          dark ? "text-[#A1A1AA]" : "text-gray-500"
+        }`}
+      >
         Loading profile...
       </div>
     );
@@ -52,8 +60,14 @@ export default function Profile() {
     }
   };
 
+  /* ================= UI ================= */
+
   return (
-    <div className="min-h-screen bg-[#0F1012] text-white px-6 py-12">
+    <div
+      className={`min-h-screen px-6 py-12 ${
+        dark ? "bg-[#0F1012] text-white" : "bg-gray-50 text-gray-900"
+      }`}
+    >
       <div className="max-w-5xl mx-auto">
 
         {/* HEADER */}
@@ -61,11 +75,14 @@ export default function Profile() {
           <div className="w-28 h-28 rounded-full bg-gradient-to-br from-[#D4AF37] to-[#B8962E] flex items-center justify-center text-black text-4xl font-bold shadow-lg">
             {form.username?.[0]?.toUpperCase()}
           </div>
+
           <div className="text-center sm:text-left">
             <h1 className="text-4xl font-bold text-[#D4AF37]">
               {form.username}
             </h1>
-            <p className="text-[#A1A1AA] mt-1">Account Profile</p>
+            <p className={dark ? "text-[#A1A1AA] mt-1" : "text-gray-500 mt-1"}>
+              Account Profile
+            </p>
           </div>
         </div>
 
@@ -73,24 +90,44 @@ export default function Profile() {
 
           {/* LEFT — PROFILE FORM */}
           <div className="lg:col-span-2 space-y-8">
-            <div className="bg-[#14161A] border border-[#262626] rounded-3xl p-6">
-              <h2 className="text-xl font-semibold mb-6">Profile Information</h2>
+            <div
+              className={`rounded-3xl p-6 border ${
+                dark
+                  ? "bg-[#14161A] border-[#262626]"
+                  : "bg-white border-gray-200 shadow-sm"
+              }`}
+            >
+              <h2 className="text-xl font-semibold mb-6">
+                Profile Information
+              </h2>
 
               <div className="grid sm:grid-cols-2 gap-5">
                 <input
-                  className="input"
+                  className={`input ${
+                    dark ? "input-dark" : "input-light"
+                  }`}
                   placeholder="Username"
                   value={form.username}
-                  onChange={(e) => setForm({ ...form, username: e.target.value })}
+                  onChange={(e) =>
+                    setForm({ ...form, username: e.target.value })
+                  }
                 />
+
                 <input
-                  className="input"
+                  className={`input ${
+                    dark ? "input-dark" : "input-light"
+                  }`}
                   placeholder="Email"
                   value={form.email}
-                  onChange={(e) => setForm({ ...form, email: e.target.value })}
+                  onChange={(e) =>
+                    setForm({ ...form, email: e.target.value })
+                  }
                 />
+
                 <input
-                  className="input sm:col-span-2"
+                  className={`input sm:col-span-2 ${
+                    dark ? "input-dark" : "input-light"
+                  }`}
                   placeholder="Phone Number"
                   value={form.phone_number}
                   onChange={(e) =>
@@ -100,14 +137,29 @@ export default function Profile() {
               </div>
             </div>
 
-            <div className="bg-[#14161A] border border-[#262626] rounded-3xl p-6">
-              <h2 className="text-xl font-semibold mb-6">Delivery Address</h2>
+            <div
+              className={`rounded-3xl p-6 border ${
+                dark
+                  ? "bg-[#14161A] border-[#262626]"
+                  : "bg-white border-gray-200 shadow-sm"
+              }`}
+            >
+              <h2 className="text-xl font-semibold mb-6">
+                Delivery Address
+              </h2>
+
               <textarea
                 rows={4}
-                className="w-full bg-[#0F1012] border border-[#262626] rounded-xl p-4 text-white outline-none"
+                className={`w-full rounded-xl p-4 outline-none ${
+                  dark
+                    ? "bg-[#0F1012] border border-[#262626] text-white"
+                    : "bg-gray-100 border border-gray-300 text-gray-900"
+                }`}
                 placeholder="Enter your address"
                 value={form.address}
-                onChange={(e) => setForm({ ...form, address: e.target.value })}
+                onChange={(e) =>
+                  setForm({ ...form, address: e.target.value })
+                }
               />
             </div>
 
@@ -127,29 +179,64 @@ export default function Profile() {
 
           {/* RIGHT — QUICK ACTIONS */}
           <div className="space-y-6">
-            <div className="bg-[#14161A] border border-[#262626] rounded-3xl p-6">
-              <h2 className="text-xl font-semibold mb-4">Quick Links</h2>
-              <ul className="space-y-3 text-[#A1A1AA]">
-                <li className="hover:text-[#D4AF37] cursor-pointer">My Orders</li>
-                <li className="hover:text-[#D4AF37] cursor-pointer">Wishlist</li>
-                <li className="hover:text-red-400 cursor-pointer">Logout</li>
+            <div
+              className={`rounded-3xl p-6 border ${
+                dark
+                  ? "bg-[#14161A] border-[#262626]"
+                  : "bg-white border-gray-200 shadow-sm"
+              }`}
+            >
+              <h2 className="text-xl font-semibold mb-4">
+                Quick Links
+              </h2>
+
+              <ul
+                className={`space-y-3 ${
+                  dark ? "text-[#A1A1AA]" : "text-gray-600"
+                }`}
+              >
+                <li className="hover:text-[#D4AF37] cursor-pointer">
+                  My Orders
+                </li>
+                <li className="hover:text-[#D4AF37] cursor-pointer">
+                  Wishlist
+                </li>
+                <li className="hover:text-red-400 cursor-pointer">
+                  Logout
+                </li>
               </ul>
             </div>
           </div>
+
         </div>
       </div>
 
+      {/* INPUT STYLES — 1:1 */}
       <style jsx>{`
         .input {
-          background: #0F1012;
-          border: 1px solid #262626;
           border-radius: 12px;
           padding: 12px 14px;
-          color: white;
           outline: none;
         }
-        .input::placeholder {
+
+        .input-dark {
+          background: #0F1012;
+          border: 1px solid #262626;
+          color: white;
+        }
+
+        .input-dark::placeholder {
           color: #A1A1AA;
+        }
+
+        .input-light {
+          background: #f3f4f6;
+          border: 1px solid #d1d5db;
+          color: #111827;
+        }
+
+        .input-light::placeholder {
+          color: #6b7280;
         }
       `}</style>
     </div>
