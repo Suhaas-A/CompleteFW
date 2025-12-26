@@ -7,12 +7,14 @@ import { useWishlistContext } from "../contexts/Wishlist";
 import { useTheme } from "../contexts/ThemeContext";
 import Loader from "../components/common/Loader";
 import { getReviewsForProduct, addReview } from "../api/reviewApi";
+import axiosInstance from "../api/axiosInstance";
 
 export default function ProductDetails() {
   const { id } = useParams();
   const { dark } = useTheme();
 
   const [product, setProduct] = useState(null);
+  const [sizes, setSizes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [reviews, setReviews] = useState([]);
 
@@ -34,12 +36,22 @@ export default function ProductDetails() {
     localStorage.getItem("access_token");
 
   // ─────────────────────────────────────────────
-  // LOAD PRODUCT
+  // LOAD PRODUCT + SIZES
   // ─────────────────────────────────────────────
   useEffect(() => {
-    getProductById(id)
-      .then((res) => setProduct(res.data))
-      .finally(() => setLoading(false));
+    (async () => {
+      try {
+        const [productRes, sizeRes] = await Promise.all([
+          getProductById(id),
+          axiosInstance.get("/sizes"),
+        ]);
+
+        setProduct(productRes.data);
+        setSizes(sizeRes.data || []);
+      } finally {
+        setLoading(false);
+      }
+    })();
   }, [id]);
 
   // ─────────────────────────────────────────────
@@ -88,6 +100,9 @@ export default function ProductDetails() {
 
   const wishlisted = isInWishlist(product.id);
 
+  const sizeName =
+    sizes.find((s) => s.id === product.size_id)?.name || "N/A";
+
   return (
     <div
       className={`min-h-screen px-6 py-12 ${
@@ -130,6 +145,18 @@ export default function ProductDetails() {
 
               <p className="text-3xl font-semibold mt-6">
                 ₹{product.price}
+              </p>
+
+              {/* ✅ SIZE DISPLAY */}
+              <p
+                className={`mt-2 text-sm ${
+                  dark ? "text-[#A1A1AA]" : "text-gray-600"
+                }`}
+              >
+                <span className="font-semibold text-[#D4AF37]">
+                  Size:
+                </span>{" "}
+                {sizeName}
               </p>
 
               <p
@@ -229,66 +256,6 @@ export default function ProductDetails() {
             </button>
           </form>
         </div>
-
-        {/* ───────── CUSTOMER REVIEWS ───────── */}
-        <div
-          className={`rounded-3xl p-8 border shadow-xl ${
-            dark
-              ? "bg-[#14161A] border-[#262626]"
-              : "bg-white border-gray-200"
-          }`}
-        >
-          <h2 className="text-2xl font-bold text-[#D4AF37] mb-6">
-            Customer Reviews
-          </h2>
-
-          {reviews.length === 0 && (
-            <p className={dark ? "text-[#A1A1AA]" : "text-gray-500"}>
-              No reviews yet.
-            </p>
-          )}
-
-          <div className="space-y-5">
-            {reviews.map((rev) => (
-              <div
-                key={rev.id}
-                className={`rounded-2xl p-5 border ${
-                  dark
-                    ? "bg-[#0F1012] border-[#262626]"
-                    : "bg-gray-100 border-gray-300"
-                }`}
-              >
-                <p className="text-[#D4AF37] font-semibold">
-                  {rev.rating} ★ Rating
-                </p>
-
-                <p
-                  className={`mt-2 ${
-                    dark ? "text-[#E5E5E5]" : "text-gray-700"
-                  }`}
-                >
-                  {rev.comment}
-                </p>
-
-                <p
-                  className={`text-xs mt-3 ${
-                    dark ? "text-[#6B6B6B]" : "text-gray-500"
-                  }`}
-                >
-                  {new Date(rev.created_at).toLocaleString()}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <p
-          className={`text-center text-xs ${
-            dark ? "text-[#6B6B6B]" : "text-gray-400"
-          }`}
-        >
-          Eleganza • Product Details
-        </p>
       </div>
     </div>
   );
