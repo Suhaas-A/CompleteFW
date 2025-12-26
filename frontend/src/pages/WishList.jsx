@@ -2,10 +2,13 @@ import { useEffect, useState } from "react";
 import { useWishlistContext } from "../contexts/Wishlist";
 import { useCartContext } from "../contexts/CartContext";
 import { addToCart } from "../api/cartApi";
+import { useTheme } from "../contexts/ThemeContext";
 
 export default function Wishlist() {
   const [filterBy, setFilterBy] = useState("all");
   const [sortBy, setSortBy] = useState("none");
+
+  const { dark } = useTheme();
 
   const token =
     sessionStorage.getItem("access_token") ||
@@ -28,7 +31,11 @@ export default function Wishlist() {
 
   if (!token)
     return (
-      <div className="min-h-screen bg-[#0F1012] flex flex-col items-center justify-center text-[#A1A1AA]">
+      <div
+        className={`min-h-screen flex flex-col items-center justify-center ${
+          dark ? "bg-[#0F1012] text-[#A1A1AA]" : "bg-gray-50 text-gray-600"
+        }`}
+      >
         <h2 className="text-3xl font-bold text-[#D4AF37] mb-2">
           Login Required
         </h2>
@@ -40,14 +47,22 @@ export default function Wishlist() {
 
   if (loading)
     return (
-      <div className="min-h-screen bg-[#0F1012] flex items-center justify-center text-[#A1A1AA]">
+      <div
+        className={`min-h-screen flex items-center justify-center ${
+          dark ? "bg-[#0F1012] text-[#A1A1AA]" : "bg-gray-50 text-gray-600"
+        }`}
+      >
         Loading your wishlist...
       </div>
     );
 
   if (!wishlist.length)
     return (
-      <div className="min-h-screen bg-[#0F1012] flex flex-col items-center justify-center text-[#A1A1AA]">
+      <div
+        className={`min-h-screen flex flex-col items-center justify-center ${
+          dark ? "bg-[#0F1012] text-[#A1A1AA]" : "bg-gray-50 text-gray-600"
+        }`}
+      >
         <h2 className="text-3xl font-bold text-[#D4AF37] mb-2">
           Your Wishlist is Empty ❤️
         </h2>
@@ -77,7 +92,11 @@ export default function Wishlist() {
   /* ------------------ UI ------------------ */
 
   return (
-    <div className="min-h-screen bg-[#0F1012] text-white px-6 py-14">
+    <div
+      className={`min-h-screen px-6 py-14 ${
+        dark ? "bg-[#0F1012] text-white" : "bg-white text-gray-900"
+      }`}
+    >
       <div className="max-w-6xl mx-auto">
 
         {/* HEADER */}
@@ -96,7 +115,11 @@ export default function Wishlist() {
             return (
               <div
                 key={p.id}
-                className="bg-[#14161A] border border-[#262626] rounded-3xl overflow-hidden hover:shadow-xl transition"
+                className={`rounded-3xl overflow-hidden transition ${
+                  dark
+                    ? "bg-[#14161A] border border-[#262626] hover:shadow-xl"
+                    : "bg-white border border-gray-200 shadow-sm hover:shadow-md"
+                }`}
               >
                 {/* IMAGE */}
                 <img
@@ -127,7 +150,9 @@ export default function Wishlist() {
                       className={`flex items-center justify-center gap-2 text-sm px-4 py-2 rounded-full font-semibold transition
                         ${
                           inCart
-                            ? "bg-[#262626] text-[#A1A1AA] cursor-not-allowed"
+                            ? dark
+                              ? "bg-[#262626] text-[#A1A1AA] cursor-not-allowed"
+                              : "bg-gray-200 text-gray-400 cursor-not-allowed"
                             : "bg-gradient-to-r from-[#D4AF37] to-[#B8962E] text-black hover:brightness-110"
                         }`}
                     >
