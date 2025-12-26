@@ -21,10 +21,10 @@ from sqlalchemy.orm import Session
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 
-from db.database import get_db
-from model import tables
-from schemas import data
-from core.config import settings
+from backend.db.database import get_db
+from backend.model import tables
+from backend.schemas import data
+from backend.core.config import settings
 
 router = APIRouter()
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -368,7 +368,7 @@ def get_order_details(order_id: int, db: Session = Depends(get_db), current_user
 
 # ---------------------- Order Status: update & timeline -------------------- #
 
-@router.post("/order/{order_id}/status", tags=["orders"])
+@router.post("/order/{order_id}/update_status", tags=["orders"])
 def update_order_status(
     order_id: int,
     payload: data.OrderStatusHistoryCreate,
@@ -475,5 +475,4 @@ def admin_get_all_orders(
         })
 
     return result
-
 
