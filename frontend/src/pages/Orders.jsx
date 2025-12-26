@@ -2,12 +2,14 @@ import { useEffect, useState } from "react";
 import { getMyOrders } from "../api/orderApi";
 import Loader from "../components/common/Loader";
 import { useNavigate } from "react-router-dom";
+import { useTheme } from "../contexts/ThemeContext";
 
 export default function Orders() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [openTimeline, setOpenTimeline] = useState(null);
   const navigate = useNavigate();
+  const { dark } = useTheme();
 
   useEffect(() => {
     getMyOrders()
@@ -19,11 +21,19 @@ export default function Orders() {
 
   if (!orders.length)
     return (
-      <div className="min-h-screen bg-[#0F1012] flex flex-col items-center justify-center text-[#A1A1AA]">
-        <h2 className="text-2xl font-semibold text-white mb-2">
+      <div
+        className={`min-h-screen flex flex-col items-center justify-center ${
+          dark ? "bg-[#0F1012] text-[#A1A1AA]" : "bg-gray-50 text-gray-600"
+        }`}
+      >
+        <h2
+          className={`text-2xl font-semibold mb-2 ${
+            dark ? "text-white" : "text-gray-900"
+          }`}
+        >
           No Orders Yet
         </h2>
-        <p className="text-sm">
+        <p className="text-sm text-center max-w-md">
           Your Eleganza orders will appear here once you make a purchase.
         </p>
       </div>
@@ -32,7 +42,11 @@ export default function Orders() {
   const timelineStages = ["Pending", "Packed", "Shipped", "Delivered"];
 
   return (
-    <div className="min-h-screen bg-[#0F1012] px-6 py-12 text-white">
+    <div
+      className={`min-h-screen px-6 py-12 ${
+        dark ? "bg-[#0F1012] text-white" : "bg-gray-50 text-gray-900"
+      }`}
+    >
       <div className="max-w-5xl mx-auto">
 
         {/* HEADER */}
@@ -47,7 +61,11 @@ export default function Orders() {
             return (
               <div
                 key={order.id}
-                className="bg-[#14161A] border border-[#262626] rounded-3xl p-6 hover:shadow-xl transition"
+                className={`rounded-3xl p-6 border transition ${
+                  dark
+                    ? "bg-[#14161A] border-[#262626] hover:shadow-xl"
+                    : "bg-white border-gray-200 shadow-sm hover:shadow-md"
+                }`}
               >
                 {/* HEADER */}
                 <div
@@ -61,21 +79,25 @@ export default function Orders() {
 
                     <span
                       className={`px-3 py-1 text-xs rounded-full font-semibold
-                      ${
-                        order.status?.toLowerCase() === "delivered"
-                          ? "bg-green-500/20 text-green-400"
-                          : order.status?.toLowerCase() === "pending"
-                          ? "bg-yellow-500/20 text-yellow-400"
-                          : order.status?.toLowerCase() === "cancelled"
-                          ? "bg-red-500/20 text-red-400"
-                          : "bg-blue-500/20 text-blue-400"
-                      }`}
+                        ${
+                          order.status?.toLowerCase() === "delivered"
+                            ? "bg-green-500/20 text-green-400"
+                            : order.status?.toLowerCase() === "pending"
+                            ? "bg-yellow-500/20 text-yellow-400"
+                            : order.status?.toLowerCase() === "cancelled"
+                            ? "bg-red-500/20 text-red-400"
+                            : "bg-blue-500/20 text-blue-400"
+                        }`}
                     >
                       {order.status}
                     </span>
                   </div>
 
-                  <div className="text-sm text-[#A1A1AA] space-y-1">
+                  <div
+                    className={`text-sm space-y-1 ${
+                      dark ? "text-[#A1A1AA]" : "text-gray-600"
+                    }`}
+                  >
                     <p>
                       <span className="text-[#D4AF37] font-medium">
                         Delivery Address:
@@ -119,18 +141,22 @@ export default function Orders() {
                               className={`h-1 w-full -ml-2 -mr-2 ${
                                 index <= currentIndex
                                   ? "bg-green-500"
-                                  : "bg-[#262626]"
+                                  : dark
+                                  ? "bg-[#262626]"
+                                  : "bg-gray-300"
                               }`}
                             />
                           )}
 
                           <div
                             className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold
-                            ${
-                              index <= currentIndex
-                                ? "bg-green-500 text-white"
-                                : "bg-[#262626] text-[#A1A1AA]"
-                            }`}
+                              ${
+                                index <= currentIndex
+                                  ? "bg-green-500 text-white"
+                                  : dark
+                                  ? "bg-[#262626] text-[#A1A1AA]"
+                                  : "bg-gray-300 text-gray-600"
+                              }`}
                           >
                             {index + 1}
                           </div>
@@ -139,7 +165,9 @@ export default function Orders() {
                             className={`mt-2 text-xs font-medium ${
                               index <= currentIndex
                                 ? "text-green-400"
-                                : "text-[#A1A1AA]"
+                                : dark
+                                ? "text-[#A1A1AA]"
+                                : "text-gray-500"
                             }`}
                           >
                             {stage}
