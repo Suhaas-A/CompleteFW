@@ -2,12 +2,15 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { getOrderDetails } from "../api/orderApi";
 import { useAuthContext } from "../contexts/AuthContext";
+import { useTheme } from "../contexts/ThemeContext";
 
 const TIMELINE = ["Pending", "Packed", "Shipped", "Delivered"];
 
 export default function OrderDetails() {
   const { id } = useParams();
   const { token } = useAuthContext();
+  const { dark } = useTheme();
+
   const [order, setOrder] = useState(null);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -29,7 +32,11 @@ export default function OrderDetails() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0F1012] flex items-center justify-center text-[#A1A1AA]">
+      <div
+        className={`min-h-screen flex items-center justify-center ${
+          dark ? "bg-[#0F1012] text-[#A1A1AA]" : "bg-gray-50 text-gray-600"
+        }`}
+      >
         Loading order details...
       </div>
     );
@@ -37,7 +44,11 @@ export default function OrderDetails() {
 
   if (!order) {
     return (
-      <div className="min-h-screen bg-[#0F1012] flex flex-col items-center justify-center text-[#A1A1AA]">
+      <div
+        className={`min-h-screen flex flex-col items-center justify-center ${
+          dark ? "bg-[#0F1012] text-[#A1A1AA]" : "bg-gray-50 text-gray-600"
+        }`}
+      >
         <p className="mb-4">Order not found.</p>
         <Link
           to="/orders"
@@ -53,7 +64,11 @@ export default function OrderDetails() {
   const currentStep = TIMELINE.indexOf(order.status);
 
   return (
-    <div className="min-h-screen bg-[#0F1012] px-6 py-14 text-white">
+    <div
+      className={`min-h-screen px-6 py-14 ${
+        dark ? "bg-[#0F1012] text-white" : "bg-gray-50 text-gray-900"
+      }`}
+    >
       <div className="max-w-5xl mx-auto space-y-12">
 
         {/* HEADER */}
@@ -62,7 +77,11 @@ export default function OrderDetails() {
             <h1 className="text-4xl font-bold text-[#D4AF37]">
               Order #{order.id}
             </h1>
-            <p className="text-[#A1A1AA] mt-2">
+            <p
+              className={`mt-2 ${
+                dark ? "text-[#A1A1AA]" : "text-gray-600"
+              }`}
+            >
               Placed on{" "}
               {new Date(order.ordered_at || order.created_at).toLocaleString()}
             </p>
@@ -73,8 +92,14 @@ export default function OrderDetails() {
           </span>
         </div>
 
-        {/* TIMELINE (MATCHING PREVIEW) */}
-        <div className="bg-[#14161A] border border-[#262626] rounded-3xl p-6">
+        {/* TIMELINE */}
+        <div
+          className={`rounded-3xl p-6 border ${
+            dark
+              ? "bg-[#14161A] border-[#262626]"
+              : "bg-white border-gray-200 shadow-sm"
+          }`}
+        >
           <div className="flex justify-between">
             {TIMELINE.map((step, i) => (
               <div key={step} className="flex-1 text-center">
@@ -83,7 +108,9 @@ export default function OrderDetails() {
                     ${
                       i <= currentStep
                         ? "bg-green-500 text-white"
-                        : "bg-[#262626] text-[#A1A1AA]"
+                        : dark
+                        ? "bg-[#262626] text-[#A1A1AA]"
+                        : "bg-gray-300 text-gray-600"
                     }`}
                 >
                   {i + 1}
@@ -93,7 +120,9 @@ export default function OrderDetails() {
                     ${
                       i <= currentStep
                         ? "text-green-400"
-                        : "text-[#A1A1AA]"
+                        : dark
+                        ? "text-[#A1A1AA]"
+                        : "text-gray-500"
                     }`}
                 >
                   {step}
@@ -103,17 +132,20 @@ export default function OrderDetails() {
           </div>
         </div>
 
-        {/* ITEMS CARD */}
-        <div className="bg-[#14161A] border border-[#262626] rounded-3xl p-6 space-y-6">
+        {/* ITEMS */}
+        <div
+          className={`rounded-3xl p-6 space-y-6 border ${
+            dark
+              ? "bg-[#14161A] border-[#262626]"
+              : "bg-white border-gray-200 shadow-sm"
+          }`}
+        >
           <h2 className="text-2xl font-semibold text-[#D4AF37]">
             Ordered Items
           </h2>
 
           {products.map((p) => (
-            <div
-              key={p.id}
-              className="flex items-center gap-5"
-            >
+            <div key={p.id} className="flex items-center gap-5">
               <img
                 src={
                   p.photo_link && p.photo_link !== "no photo"
@@ -126,10 +158,18 @@ export default function OrderDetails() {
 
               <div className="flex-1">
                 <h3 className="font-semibold">{p.name}</h3>
-                <p className="text-sm text-[#A1A1AA] line-clamp-2">
+                <p
+                  className={`text-sm line-clamp-2 ${
+                    dark ? "text-[#A1A1AA]" : "text-gray-600"
+                  }`}
+                >
                   {p.description}
                 </p>
-                <p className="text-sm text-[#A1A1AA] mt-1">
+                <p
+                  className={`text-sm mt-1 ${
+                    dark ? "text-[#A1A1AA]" : "text-gray-600"
+                  }`}
+                >
                   Qty: {p.quantity}
                 </p>
               </div>
@@ -143,20 +183,40 @@ export default function OrderDetails() {
 
         {/* SUMMARY */}
         <div className="grid md:grid-cols-2 gap-8">
-          <div className="bg-[#14161A] border border-[#262626] rounded-3xl p-6">
+          <div
+            className={`rounded-3xl p-6 border ${
+              dark
+                ? "bg-[#14161A] border-[#262626]"
+                : "bg-white border-gray-200 shadow-sm"
+            }`}
+          >
             <h3 className="font-semibold text-[#D4AF37] mb-3">
               Delivery Address
             </h3>
-            <p className="text-[#A1A1AA] text-sm leading-relaxed">
+            <p
+              className={`text-sm leading-relaxed ${
+                dark ? "text-[#A1A1AA]" : "text-gray-600"
+              }`}
+            >
               {order.delivery_address || "Not provided"}
             </p>
           </div>
 
-          <div className="bg-[#14161A] border border-[#262626] rounded-3xl p-6">
+          <div
+            className={`rounded-3xl p-6 border ${
+              dark
+                ? "bg-[#14161A] border-[#262626]"
+                : "bg-white border-gray-200 shadow-sm"
+            }`}
+          >
             <h3 className="font-semibold text-[#D4AF37] mb-3">
               Order Summary
             </h3>
-            <p className="text-sm text-[#A1A1AA]">
+            <p
+              className={`text-sm ${
+                dark ? "text-[#A1A1AA]" : "text-gray-600"
+              }`}
+            >
               Total Amount
             </p>
             <p className="text-2xl font-bold text-[#D4AF37] mt-1">
