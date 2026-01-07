@@ -1,4 +1,3 @@
-// src/contexts/CartContext.jsx
 import { createContext, useContext, useState, useCallback } from "react";
 import {
   getCart,
@@ -13,12 +12,12 @@ export const CartProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // Load cart ONLY when manually called (not on mount)
+  // Load cart ONLY when manually called
   const fetchCart = useCallback(async () => {
     const token = sessionStorage.getItem("access_token");
 
     if (!token) {
-      setCartItems([]); // user not logged in → cart empty
+      setCartItems([]);
       return;
     }
 
@@ -26,8 +25,8 @@ export const CartProvider = ({ children }) => {
       setLoading(true);
       const { data } = await getCart();
       setCartItems(data.items || []);
-    } catch (err) {
-      setCartItems([]); // prevents crashes on 401
+    } catch {
+      setCartItems([]);
     } finally {
       setLoading(false);
     }
@@ -50,10 +49,17 @@ export const CartProvider = ({ children }) => {
 
   const clearCart = () => setCartItems([]);
 
+  // 🟢 TOTAL PRICE
   const totalPrice = cartItems.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0
   );
+
+  // 🟢 ADD THIS FUNCTION (FIX)
+  const getItemFinalPrice = (item) => {
+    // If later you add discounts, handle here
+    return item.price;
+  };
 
   return (
     <CartContext.Provider
@@ -65,7 +71,8 @@ export const CartProvider = ({ children }) => {
         handleUpdateQuantity,
         handleRemoveFromCart,
         clearCart,
-        fetchCart, // manual fetch now
+        fetchCart,
+        getItemFinalPrice, // ✅ EXPORTED
       }}
     >
       {children}
