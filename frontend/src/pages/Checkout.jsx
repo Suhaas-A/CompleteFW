@@ -1,16 +1,16 @@
 import { useEffect, useState } from "react";
 import { useCartContext } from "../contexts/CartContext";
-import { createOrder } from "../api/orderApi";
-import axiosInstance from "../api/axiosInstance";
 import { useNavigate } from "react-router-dom";
-import { useTheme } from "../contexts/ThemeContext";
+import axiosInstance from "../api/axiosInstance";
+import { createOrder } from "../api/orderApi";
+import useTheme from "../contexts/ThemeContext";
 
 export default function Checkout() {
   const {
     cartItems,
-    totalPrice,
+    totalPrice,          // ✅ ALREADY DISCOUNT-AWARE
     clearCart,
-    getItemFinalPrice,
+    getItemFinalPrice,   // ✅ PROVIDED BY CONTEXT
   } = useCartContext();
 
   const { dark } = useTheme();
@@ -30,6 +30,7 @@ export default function Checkout() {
   const [couponCode, setCouponCode] = useState("");
   const [couponApplied, setCouponApplied] = useState(null);
   const [couponError, setCouponError] = useState("");
+  const [couponList, setCouponList] = useState([]);
 
   // ─────────────────────────────────────────────
   // PAYMENT STATE
@@ -41,43 +42,38 @@ export default function Checkout() {
   // FETCH COUPONS
   // ─────────────────────────────────────────────
   useEffect(() => {
-    (async () => {
-      try {
-        const res = await axiosInstance.get("/coupons");
-        setCouponApplied({ list: res.data });
-      } catch (err) {
-        console.error("Failed to fetch coupons", err);
-        setCouponApplied({ list: [] });
-      }
-    })();
+    axiosInstance
+      .get("/coupons")
+      .then((res) => setCouponList(res.data || []))
+      .catch(() => setCouponList([]));
   }, []);
 
   // ─────────────────────────────────────────────
-  // APPLY COUPON
+  // APPLY COUPON (ON DISCOUNTED TOTAL)
   // ─────────────────────────────────────────────
   const applyCoupon = () => {
     if (!couponCode.trim()) return;
 
-    const found = couponApplied?.list?.find(
+    const found = couponList.find(
       (c) => c.name.toLowerCase() === couponCode.toLowerCase()
     );
 
     if (!found) {
       setCouponError("Invalid coupon code");
-      setCouponApplied((p) => ({ ...p, applied: null }));
+      setCouponApplied(null);
       return;
     }
 
     setCouponError("");
-    setCouponApplied((p) => ({ ...p, applied: found }));
+    setCouponApplied(found);
   };
 
   // ─────────────────────────────────────────────
-  // FINAL PRICE CALCULATION
+  // FINAL TOTAL (PRODUCT DISCOUNT + COUPON)
   // ─────────────────────────────────────────────
-  const discountPercent = couponApplied?.applied?.offer || 0;
-  const discountAmount = Math.round((totalPrice * discountPercent) / 100);
-  const finalAmount = totalPrice - discountAmount;
+  const couponPercent = couponApplied?.offer || 0;
+  const couponDiscount = Math.round((totalPrice * couponPercent) / 100);
+  const finalAmount = totalPrice - couponDiscount;
 
   // ─────────────────────────────────────────────
   // PLACE ORDER
@@ -100,9 +96,7 @@ export default function Checkout() {
       address1,
       address2,
       address3,
-      couponApplied?.applied
-        ? `Coupon Applied: ${couponApplied.applied.name}`
-        : null,
+      couponApplied ? `Coupon: ${couponApplied.name}` : null,
     ]
       .filter(Boolean)
       .join("\n");
@@ -115,7 +109,7 @@ export default function Checkout() {
     try {
       // 1️⃣ CREATE ORDER
       const orderRes = await createOrder({
-        delivery_address: fullAddress, // ✅ correct field
+        delivery_address: fullAddress,
         products,
         delivery_link: paymentMethod === "online" ? "pending" : "cod",
         status: "Pending",
@@ -131,19 +125,16 @@ export default function Checkout() {
         return;
       }
 
-      // 3️⃣ ONLINE PAYMENT (CASHFREE)
-      const paymentRes = await axiosInstance.post(
-        "/payments/create", // ✅ correct endpoint
-        {
-          order_id: orderId,
-          amount: finalAmount,
-        }
-      );
+      // 3️⃣ ONLINE PAYMENT
+      const paymentRes = await axiosInstance.post("/payments/create", {
+        order_id: orderId,
+        amount: finalAmount,
+      });
 
       const { payment_session_id } = paymentRes.data;
 
       if (!window.Cashfree) {
-        alert("Cashfree SDK not loaded");
+        alert("Payment SDK not loaded");
         setLoading(false);
         return;
       }
@@ -156,7 +147,7 @@ export default function Checkout() {
 
     } catch (err) {
       console.error("Checkout failed", err);
-      alert("Checkout failed. Please try again.");
+      alert("Checkout failed");
       setLoading(false);
     }
   };
@@ -167,7 +158,7 @@ export default function Checkout() {
   return (
     <div
       className={`min-h-screen px-6 py-12 ${
-        dark ? "bg-[#0F1012] text-white" : "bg-gray-50"
+        dark ? "bg-[#0F1012] text-white" : "bg-gray-50 text-gray-900"
       }`}
     >
       <div className="max-w-6xl mx-auto">
@@ -177,7 +168,7 @@ export default function Checkout() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
 
-          {/* LEFT COLUMN */}
+          {/* LEFT */}
           <div className="lg:col-span-2 space-y-8">
 
             {/* ADDRESS */}
@@ -210,7 +201,7 @@ export default function Checkout() {
               />
             </div>
 
-            {/* PAYMENT METHOD */}
+            {/* PAYMENT */}
             <div className="bg-[#14161A] border border-[#262626] rounded-3xl p-6">
               <h2 className="text-xl font-semibold mb-4">Payment Method</h2>
 
@@ -234,7 +225,7 @@ export default function Checkout() {
             </div>
           </div>
 
-          {/* RIGHT COLUMN */}
+          {/* RIGHT */}
           <div className="bg-[#14161A] border border-[#262626] rounded-3xl p-6 h-fit space-y-4">
             <h2 className="text-xl font-semibold">Order Summary</h2>
 
@@ -267,10 +258,9 @@ export default function Checkout() {
                 </button>
               </div>
 
-              {couponApplied?.applied && (
+              {couponApplied && (
                 <p className="text-green-500 text-sm mt-2">
-                  Applied {couponApplied.applied.name} (
-                  {couponApplied.applied.offer}% off)
+                  Applied {couponApplied.name} ({couponApplied.offer}% OFF)
                 </p>
               )}
 
@@ -282,14 +272,14 @@ export default function Checkout() {
             {/* TOTAL */}
             <div className="border-t border-[#262626] pt-4 space-y-1 text-sm">
               <div className="flex justify-between">
-                <span>Subtotal</span>
+                <span>Subtotal (after product discounts)</span>
                 <span>₹{totalPrice}</span>
               </div>
 
-              {discountPercent > 0 && (
+              {couponPercent > 0 && (
                 <div className="flex justify-between text-green-400">
                   <span>Coupon Discount</span>
-                  <span>-₹{discountAmount}</span>
+                  <span>-₹{couponDiscount}</span>
                 </div>
               )}
 
@@ -302,7 +292,8 @@ export default function Checkout() {
             <button
               onClick={handlePlaceOrder}
               disabled={loading}
-              className="w-full mt-4 bg-gradient-to-r from-[#D4AF37] to-[#B8962E] text-black py-3 rounded-full font-semibold"
+              className="w-full mt-4 bg-gradient-to-r from-[#D4AF37] to-[#B8962E]
+                         text-black py-3 rounded-full font-semibold"
             >
               {loading ? "Processing..." : "Place Order"}
             </button>
@@ -312,4 +303,3 @@ export default function Checkout() {
     </div>
   );
 }
-
