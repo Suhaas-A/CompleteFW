@@ -10,23 +10,30 @@ export default function Checkout() {
     cartItems,
     totalPrice,
     clearCart,
-    getItemFinalPrice, // ✅ important
+    getItemFinalPrice,
   } = useCartContext();
 
   const { dark } = useTheme();
   const navigate = useNavigate();
 
-  // Address fields
+  // ─────────────────────────────────────────────
+  // ADDRESS STATE
+  // ─────────────────────────────────────────────
   const [phone, setPhone] = useState("");
   const [address1, setAddress1] = useState("");
   const [address2, setAddress2] = useState("");
   const [address3, setAddress3] = useState("");
 
-  // Coupon
+  // ─────────────────────────────────────────────
+  // COUPON STATE
+  // ─────────────────────────────────────────────
   const [couponCode, setCouponCode] = useState("");
   const [couponApplied, setCouponApplied] = useState(null);
   const [couponError, setCouponError] = useState("");
 
+  // ─────────────────────────────────────────────
+  // PAYMENT STATE
+  // ─────────────────────────────────────────────
   const [paymentMethod, setPaymentMethod] = useState("cod");
   const [loading, setLoading] = useState(false);
 
@@ -38,7 +45,8 @@ export default function Checkout() {
       try {
         const res = await axiosInstance.get("/api/coupons");
         setCouponApplied({ list: res.data });
-      } catch {
+      } catch (err) {
+        console.error("Failed to fetch coupons", err);
         setCouponApplied({ list: [] });
       }
     })();
@@ -65,7 +73,7 @@ export default function Checkout() {
   };
 
   // ─────────────────────────────────────────────
-  // FINAL AMOUNT
+  // FINAL PRICE CALCULATION
   // ─────────────────────────────────────────────
   const discountPercent = couponApplied?.applied?.offer || 0;
   const discountAmount = Math.round((totalPrice * discountPercent) / 100);
@@ -80,6 +88,11 @@ export default function Checkout() {
       return;
     }
 
+    if (cartItems.length === 0) {
+      alert("Your cart is empty");
+      return;
+    }
+
     setLoading(true);
 
     const fullAddress = [
@@ -88,17 +101,21 @@ export default function Checkout() {
       address2,
       address3,
       couponApplied?.applied
-        ? `Coupon: ${couponApplied.applied.name}`
+        ? `Coupon Applied: ${couponApplied.applied.name}`
         : null,
     ]
       .filter(Boolean)
       .join("\n");
 
-    const products = cartItems.map((i) => [i.id, i.quantity]);
+    const products = cartItems.map((item) => [
+      item.id,
+      item.quantity,
+    ]);
 
     try {
+      // 1️⃣ CREATE ORDER
       const orderRes = await createOrder({
-        deliver_address: fullAddress,
+        delivery_address: fullAddress, // ✅ correct field
         products,
         delivery_link: paymentMethod === "online" ? "pending" : "cod",
         status: "Pending",
@@ -106,23 +123,30 @@ export default function Checkout() {
 
       const orderId = orderRes.data.id;
 
+      // 2️⃣ CASH ON DELIVERY
       if (paymentMethod === "cod") {
         clearCart();
+        setLoading(false);
         navigate("/orders");
         return;
       }
 
+      // 3️⃣ ONLINE PAYMENT (CASHFREE)
       const paymentRes = await axiosInstance.post(
-        "/payments/create-intent",
+        "/payments/create", // ✅ correct endpoint
         {
           order_id: orderId,
           amount: finalAmount,
-          currency: "INR",
-          provider: "cashfree",
         }
       );
 
       const { payment_session_id } = paymentRes.data;
+
+      if (!window.Cashfree) {
+        alert("Cashfree SDK not loaded");
+        setLoading(false);
+        return;
+      }
 
       const cashfree = new window.Cashfree();
       cashfree.checkout({
@@ -131,12 +155,15 @@ export default function Checkout() {
       });
 
     } catch (err) {
-      console.error(err);
-      alert("Checkout failed");
+      console.error("Checkout failed", err);
+      alert("Checkout failed. Please try again.");
       setLoading(false);
     }
   };
 
+  // ─────────────────────────────────────────────
+  // UI
+  // ─────────────────────────────────────────────
   return (
     <div
       className={`min-h-screen px-6 py-12 ${
@@ -150,8 +177,9 @@ export default function Checkout() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
 
-          {/* LEFT */}
+          {/* LEFT COLUMN */}
           <div className="lg:col-span-2 space-y-8">
+
             {/* ADDRESS */}
             <div className="bg-[#14161A] border border-[#262626] rounded-3xl p-6 space-y-4">
               <h2 className="text-xl font-semibold">Shipping Details</h2>
@@ -182,9 +210,10 @@ export default function Checkout() {
               />
             </div>
 
-            {/* PAYMENT */}
+            {/* PAYMENT METHOD */}
             <div className="bg-[#14161A] border border-[#262626] rounded-3xl p-6">
               <h2 className="text-xl font-semibold mb-4">Payment Method</h2>
+
               <label className="flex gap-3">
                 <input
                   type="radio"
@@ -193,6 +222,7 @@ export default function Checkout() {
                 />
                 Cash on Delivery
               </label>
+
               <label className="flex gap-3 mt-2">
                 <input
                   type="radio"
@@ -204,16 +234,17 @@ export default function Checkout() {
             </div>
           </div>
 
-          {/* RIGHT */}
+          {/* RIGHT COLUMN */}
           <div className="bg-[#14161A] border border-[#262626] rounded-3xl p-6 h-fit space-y-4">
             <h2 className="text-xl font-semibold">Order Summary</h2>
 
             {cartItems.map((item) => {
               const finalPrice = getItemFinalPrice(item);
-
               return (
                 <div key={item.id} className="flex justify-between text-sm">
-                  <span>{item.name} × {item.quantity}</span>
+                  <span>
+                    {item.name} × {item.quantity}
+                  </span>
                   <span>₹{finalPrice * item.quantity}</span>
                 </div>
               );
@@ -248,6 +279,7 @@ export default function Checkout() {
               )}
             </div>
 
+            {/* TOTAL */}
             <div className="border-t border-[#262626] pt-4 space-y-1 text-sm">
               <div className="flex justify-between">
                 <span>Subtotal</span>
