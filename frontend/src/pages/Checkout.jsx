@@ -6,41 +6,41 @@ import { createOrder } from "../api/orderApi";
 import useTheme from "../contexts/ThemeContext";
 
 export default function Checkout() {
+  const navigate = useNavigate();
+  const { dark } = useTheme();
+
   const {
     cartItems,
-    totalPrice,          // ✅ ALREADY DISCOUNT-AWARE
+    totalPrice,          // ✅ already discounted (product-level)
     clearCart,
-    getItemFinalPrice,   // ✅ PROVIDED BY CONTEXT
+    getItemFinalPrice,   // ✅ exists in CartContext
   } = useCartContext();
 
-  const { dark } = useTheme();
-  const navigate = useNavigate();
-
-  // ─────────────────────────────────────────────
-  // ADDRESS STATE
-  // ─────────────────────────────────────────────
+  /* -------------------------------------------------
+     ADDRESS STATE
+  ------------------------------------------------- */
   const [phone, setPhone] = useState("");
   const [address1, setAddress1] = useState("");
   const [address2, setAddress2] = useState("");
   const [address3, setAddress3] = useState("");
 
-  // ─────────────────────────────────────────────
-  // COUPON STATE
-  // ─────────────────────────────────────────────
+  /* -------------------------------------------------
+     COUPON STATE
+  ------------------------------------------------- */
   const [couponCode, setCouponCode] = useState("");
+  const [couponList, setCouponList] = useState([]);
   const [couponApplied, setCouponApplied] = useState(null);
   const [couponError, setCouponError] = useState("");
-  const [couponList, setCouponList] = useState([]);
 
-  // ─────────────────────────────────────────────
-  // PAYMENT STATE
-  // ─────────────────────────────────────────────
+  /* -------------------------------------------------
+     PAYMENT STATE
+  ------------------------------------------------- */
   const [paymentMethod, setPaymentMethod] = useState("cod");
   const [loading, setLoading] = useState(false);
 
-  // ─────────────────────────────────────────────
-  // FETCH COUPONS
-  // ─────────────────────────────────────────────
+  /* -------------------------------------------------
+     FETCH COUPONS
+  ------------------------------------------------- */
   useEffect(() => {
     axiosInstance
       .get("/coupons")
@@ -48,9 +48,9 @@ export default function Checkout() {
       .catch(() => setCouponList([]));
   }, []);
 
-  // ─────────────────────────────────────────────
-  // APPLY COUPON (ON DISCOUNTED TOTAL)
-  // ─────────────────────────────────────────────
+  /* -------------------------------------------------
+     APPLY COUPON
+  ------------------------------------------------- */
   const applyCoupon = () => {
     if (!couponCode.trim()) return;
 
@@ -68,16 +68,16 @@ export default function Checkout() {
     setCouponApplied(found);
   };
 
-  // ─────────────────────────────────────────────
-  // FINAL TOTAL (PRODUCT DISCOUNT + COUPON)
-  // ─────────────────────────────────────────────
+  /* -------------------------------------------------
+     FINAL TOTAL (PRODUCT DISCOUNT + COUPON)
+  ------------------------------------------------- */
   const couponPercent = couponApplied?.offer || 0;
   const couponDiscount = Math.round((totalPrice * couponPercent) / 100);
   const finalAmount = totalPrice - couponDiscount;
 
-  // ─────────────────────────────────────────────
-  // PLACE ORDER
-  // ─────────────────────────────────────────────
+  /* -------------------------------------------------
+     PLACE ORDER
+  ------------------------------------------------- */
   const handlePlaceOrder = async () => {
     if (!phone || !address1) {
       alert("Phone number and address are required");
@@ -107,7 +107,7 @@ export default function Checkout() {
     ]);
 
     try {
-      // 1️⃣ CREATE ORDER
+      // CREATE ORDER
       const orderRes = await createOrder({
         delivery_address: fullAddress,
         products,
@@ -117,7 +117,7 @@ export default function Checkout() {
 
       const orderId = orderRes.data.id;
 
-      // 2️⃣ CASH ON DELIVERY
+      // CASH ON DELIVERY
       if (paymentMethod === "cod") {
         clearCart();
         setLoading(false);
@@ -125,7 +125,7 @@ export default function Checkout() {
         return;
       }
 
-      // 3️⃣ ONLINE PAYMENT
+      // ONLINE PAYMENT
       const paymentRes = await axiosInstance.post("/payments/create", {
         order_id: orderId,
         amount: finalAmount,
@@ -152,9 +152,9 @@ export default function Checkout() {
     }
   };
 
-  // ─────────────────────────────────────────────
-  // UI
-  // ─────────────────────────────────────────────
+  /* -------------------------------------------------
+     UI
+  ------------------------------------------------- */
   return (
     <div
       className={`min-h-screen px-6 py-12 ${
@@ -229,17 +229,14 @@ export default function Checkout() {
           <div className="bg-[#14161A] border border-[#262626] rounded-3xl p-6 h-fit space-y-4">
             <h2 className="text-xl font-semibold">Order Summary</h2>
 
-            {cartItems.map((item) => {
-              const finalPrice = getItemFinalPrice(item);
-              return (
-                <div key={item.id} className="flex justify-between text-sm">
-                  <span>
-                    {item.name} × {item.quantity}
-                  </span>
-                  <span>₹{finalPrice * item.quantity}</span>
-                </div>
-              );
-            })}
+            {cartItems.map((item) => (
+              <div key={item.id} className="flex justify-between text-sm">
+                <span>{item.name} × {item.quantity}</span>
+                <span>
+                  ₹{getItemFinalPrice(item) * item.quantity}
+                </span>
+              </div>
+            ))}
 
             {/* COUPON */}
             <div className="pt-4 border-t border-[#262626]">
@@ -272,7 +269,7 @@ export default function Checkout() {
             {/* TOTAL */}
             <div className="border-t border-[#262626] pt-4 space-y-1 text-sm">
               <div className="flex justify-between">
-                <span>Subtotal (after product discounts)</span>
+                <span>Subtotal</span>
                 <span>₹{totalPrice}</span>
               </div>
 
