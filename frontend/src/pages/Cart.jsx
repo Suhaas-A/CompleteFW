@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { useCartContext } from "../contexts/CartContext";
 import { useNavigate } from "react-router-dom";
 import { useTheme } from "../contexts/ThemeContext";
+import axiosInstance from "../api/axiosInstance";
+import { getAllProducts } from "../api/productApi";
 
 export default function Cart() {
   const {
@@ -15,13 +17,46 @@ export default function Cart() {
   const { dark } = useTheme();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    fetchCart();
-  }, [fetchCart]);
-
   const [sortBy, setSortBy] = useState("none");
   const [filterBy, setFilterBy] = useState("all");
 
+  /* 🔥 ADDED STATES */
+  const [discounts, setDiscounts] = useState([]);
+  const [allProducts, setAllProducts] = useState([]);
+
+  useEffect(() => {
+    fetchCart();
+
+    axiosInstance.get("/discounts").then((res) => {
+      setDiscounts(res.data || []);
+    });
+
+    getAllProducts().then((res) => {
+      setAllProducts(res.data || []);
+    });
+  }, [fetchCart]);
+
+  /* ============================================================
+     🔥 ENRICH CART ITEMS WITH FULL PRODUCT DATA
+     ============================================================ */
+  const enrichedCart = cartItems.map((item) => {
+    const fullProduct = allProducts.find((p) => p.id === item.id);
+    return fullProduct ? { ...item, ...fullProduct } : item;
+  });
+
+  /* ============================================================
+     FINAL PRICE HELPER
+     ============================================================ */
+  const getFinalPrice = (item) => {
+    if (!item.discount_id) return item.price;
+    const d = discounts.find((x) => x.id === item.discount_id);
+    if (!d) return item.price;
+    return Math.round(item.price - (d.prop / 100) * item.price);
+  };
+
+  /* ============================================================
+     EMPTY STATE
+     ============================================================ */
   if (cartItems.length === 0)
     return (
       <div
@@ -40,20 +75,34 @@ export default function Cart() {
       </div>
     );
 
-  const filtered = cartItems.filter((item) => {
-    if (filterBy === "low") return item.price < 500;
-    if (filterBy === "mid") return item.price >= 500 && item.price <= 1000;
-    if (filterBy === "high") return item.price > 1000;
+  /* ============================================================
+     FILTER + SORT (FINAL PRICE)
+     ============================================================ */
+  const filtered = enrichedCart.filter((item) => {
+    const price = getFinalPrice(item);
+    if (filterBy === "low") return price < 500;
+    if (filterBy === "mid") return price >= 500 && price <= 1000;
+    if (filterBy === "high") return price > 1000;
     return true;
   });
 
   const sorted = [...filtered].sort((a, b) => {
-    if (sortBy === "price-asc") return a.price - b.price;
-    if (sortBy === "price-desc") return b.price - a.price;
+    const pa = getFinalPrice(a);
+    const pb = getFinalPrice(b);
+    if (sortBy === "price-asc") return pa - pb;
+    if (sortBy === "price-desc") return pb - pa;
     if (sortBy === "name-asc") return a.name.localeCompare(b.name);
     if (sortBy === "name-desc") return b.name.localeCompare(a.name);
     return 0;
   });
+
+  /* ============================================================
+     DISCOUNT-AWARE TOTAL
+     ============================================================ */
+  const discountedTotal = sorted.reduce(
+    (sum, item) => sum + getFinalPrice(item) * item.quantity,
+    0
+  );
 
   const changeQty = (id, qty) => {
     if (qty < 1) return;
@@ -109,78 +158,96 @@ export default function Cart() {
 
           {/* ITEMS */}
           <div className="lg:col-span-2 space-y-6">
-            {sorted.map((item) => (
-              <div
-                key={item.id}
-                className={`rounded-3xl p-6 flex gap-6 items-center border ${
-                  dark
-                    ? "bg-[#14161A] border-[#262626]"
-                    : "bg-white border-gray-200 shadow-sm"
-                }`}
-              >
-                <img
-                  src={
-                    item.photo_link ||
-                    "https://upload.wikimedia.org/wikipedia/commons/a/ac/No_image_available.svg"
-                  }
-                  alt={item.name}
-                  className="w-28 h-28 rounded-2xl object-cover"
-                />
+            {sorted.map((item) => {
+              const finalPrice = getFinalPrice(item);
+              const discount = discounts.find(
+                (d) => d.id === item.discount_id
+              );
 
-                <div className="flex-1">
-                  <h3 className="text-lg font-semibold truncate">
-                    {item.name}
-                  </h3>
-                  <p
-                    className={`text-sm mt-1 ${
-                      dark ? "text-[#A1A1AA]" : "text-gray-600"
-                    }`}
-                  >
-                    ₹{item.price}
-                  </p>
+              return (
+                <div
+                  key={item.id}
+                  className={`rounded-3xl p-6 flex gap-6 items-center border ${
+                    dark
+                      ? "bg-[#14161A] border-[#262626]"
+                      : "bg-white border-gray-200 shadow-sm"
+                  }`}
+                >
+                  <img
+                    src={
+                      item.photo_link ||
+                      "https://upload.wikimedia.org/wikipedia/commons/a/ac/No_image_available.svg"
+                    }
+                    alt={item.name}
+                    className="w-28 h-28 rounded-2xl object-cover"
+                  />
 
-                  <div className="flex items-center gap-3 mt-3">
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold truncate">
+                      {item.name}
+                    </h3>
+
+                    {discount ? (
+                      <>
+                        <p className="text-xs line-through text-gray-400">
+                          ₹{item.price}
+                        </p>
+                        <p className="text-sm text-green-600">
+                          {discount.prop}% OFF
+                        </p>
+                        <p className="text-sm font-semibold text-[#D4AF37]">
+                          ₹{finalPrice}
+                        </p>
+                      </>
+                    ) : (
+                      <p className="text-sm mt-1 text-[#D4AF37]">
+                        ₹{item.price}
+                      </p>
+                    )}
+
+                    <div className="flex items-center gap-3 mt-3">
+                      <button
+                        onClick={() =>
+                          changeQty(item.id, item.quantity - 1)
+                        }
+                        className={`w-8 h-8 rounded-lg ${
+                          dark ? "bg-[#262626]" : "bg-gray-200"
+                        }`}
+                      >
+                        –
+                      </button>
+
+                      <span className="px-4 py-1 border border-[#D4AF37] rounded-lg">
+                        {item.quantity}
+                      </span>
+
+                      <button
+                        onClick={() =>
+                          changeQty(item.id, item.quantity + 1)
+                        }
+                        className={`w-8 h-8 rounded-lg ${
+                          dark ? "bg-[#262626]" : "bg-gray-200"
+                        }`}
+                      >
+                        +
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="text-right">
+                    <p className="text-lg font-bold text-[#D4AF37]">
+                      ₹{finalPrice * item.quantity}
+                    </p>
                     <button
-                      onClick={() =>
-                        changeQty(item.id, item.quantity - 1)
-                      }
-                      className={`w-8 h-8 rounded-lg ${
-                        dark ? "bg-[#262626]" : "bg-gray-200"
-                      }`}
+                      onClick={() => handleRemoveFromCart(item.id)}
+                      className="text-sm text-red-400 hover:text-red-500 mt-2"
                     >
-                      –
-                    </button>
-
-                    <span className="px-4 py-1 border border-[#D4AF37] rounded-lg">
-                      {item.quantity}
-                    </span>
-
-                    <button
-                      onClick={() =>
-                        changeQty(item.id, item.quantity + 1)
-                      }
-                      className={`w-8 h-8 rounded-lg ${
-                        dark ? "bg-[#262626]" : "bg-gray-200"
-                      }`}
-                    >
-                      +
+                      Remove
                     </button>
                   </div>
                 </div>
-
-                <div className="text-right">
-                  <p className="text-lg font-bold text-[#D4AF37]">
-                    ₹{item.price * item.quantity}
-                  </p>
-                  <button
-                    onClick={() => handleRemoveFromCart(item.id)}
-                    className="text-sm text-red-400 hover:text-red-500 mt-2"
-                  >
-                    Remove
-                  </button>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* SUMMARY */}
@@ -202,7 +269,7 @@ export default function Cart() {
             >
               <div className="flex justify-between">
                 <span>Subtotal</span>
-                <span>₹{totalPrice}</span>
+                <span>₹{discountedTotal}</span>
               </div>
               <div className="flex justify-between">
                 <span>Delivery</span>
@@ -216,7 +283,9 @@ export default function Cart() {
                 }`}
               >
                 <span>Total</span>
-                <span className="text-[#D4AF37]">₹{totalPrice}</span>
+                <span className="text-[#D4AF37]">
+                  ₹{discountedTotal}
+                </span>
               </div>
             </div>
 
