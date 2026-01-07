@@ -197,6 +197,7 @@ class ReviewOut(BaseModel):
     rating: int
     comment: Optional[str]
     created_at: Optional[datetime]
+    username: str
 
     class Config:
         orm_mode = True
@@ -230,14 +231,14 @@ class AddressOut(AddressCreate):
 class PaymentIntentCreate(BaseModel):
     order_id: int
     amount: float
-    currency: Optional[str] = "INR"
-    provider: Optional[str] = "stripe"
+    currency: str = "INR"
+    provider: str = "cashfree"
 
 
 class PaymentConfirm(BaseModel):
     order_id: int
     provider_payment_id: str
-    status: str  # 'succeeded' | 'failed' | 'pending'
+    status: str
 
 
 class InvoiceOut(BaseModel):
