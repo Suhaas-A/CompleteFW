@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
 
-from db.database import get_db
+from database import get_db
 from model.tables import Review, Products, Users
 from schemas.data import ReviewCreate, ReviewOut
 from routers.utils import get_current_active_user
@@ -63,4 +63,5 @@ def product_review_summary(product_id: int, db: Session = Depends(get_db)):
         return {"average_rating": None, "count": 0}
     avg = sum(r.rating for r in data)/len(data)
     return {"average_rating": round(avg, 2), "count": len(data)}
+
 
