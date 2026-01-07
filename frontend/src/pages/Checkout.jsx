@@ -43,7 +43,7 @@ export default function Checkout() {
   useEffect(() => {
     (async () => {
       try {
-        const res = await axiosInstance.get("/api/coupons");
+        const res = await axiosInstance.get("/coupons");
         setCouponApplied({ list: res.data });
       } catch (err) {
         console.error("Failed to fetch coupons", err);
@@ -312,3 +312,4 @@ export default function Checkout() {
     </div>
   );
 }
+
