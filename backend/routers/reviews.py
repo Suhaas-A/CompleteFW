@@ -3,10 +3,10 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
 
-from db.database import get_db
-from model.tables import Review, Products, Users
-from schemas.data import ReviewCreate, ReviewOut
-from routers.utils import get_current_active_user
+from backend.db.database import get_db
+from backend.model.tables import Review, Products, Users
+from backend.schemas.data import ReviewCreate, ReviewOut
+from backend.routers.utils import get_current_active_user
 
 router = APIRouter(prefix="/reviews", tags=["reviews"])
 
@@ -34,8 +34,26 @@ def post_review(payload: ReviewCreate, db: Session = Depends(get_db), current_us
 
 @router.get("/product/{product_id}", response_model=List[ReviewOut])
 def get_product_reviews(product_id: int, db: Session = Depends(get_db)):
-    reviews = db.query(Review).filter(Review.product_id == product_id).order_by(Review.created_at.desc()).all()
-    return reviews
+    reviews = (
+        db.query(Review)
+        .join(Review.user)
+        .filter(Review.product_id == product_id)
+        .order_by(Review.created_at.desc())
+        .all()
+    )
+
+    return [
+        {
+            "id": r.id,
+            "rating": r.rating,
+            "comment": r.comment,
+            "user_id": r.user_id,
+            "username": r.user.username,
+            "created_at": r.created_at,
+            "product_id": product_id
+        }
+        for r in reviews
+    ]
 
 @router.get("/product/{product_id}/summary")
 def product_review_summary(product_id: int, db: Session = Depends(get_db)):
@@ -45,4 +63,3 @@ def product_review_summary(product_id: int, db: Session = Depends(get_db)):
         return {"average_rating": None, "count": 0}
     avg = sum(r.rating for r in data)/len(data)
     return {"average_rating": round(avg, 2), "count": len(data)}
-
