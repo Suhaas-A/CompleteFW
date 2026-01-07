@@ -5,19 +5,19 @@ import requests
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
 
-from backend.db.database import get_db
-from backend.model.tables import (
+from db.database import get_db
+from model.tables import (
     Orders,
     Payment,
     OrderStatusHistory,
     Users,
 )
-from backend.schemas.data import (
+from schemas.data import (
     PaymentIntentCreate,
     PaymentConfirm,
 )
-from backend.routers.utils import get_current_active_user
-from backend.core.config import settings
+from routers.utils import get_current_active_user
+from core.config import settings
 
 router = APIRouter(prefix="/payments", tags=["Payments"])
 
@@ -219,3 +219,4 @@ async def cashfree_webhook(
 
     db.commit()
     return {"message": "Webhook processed"}
+
