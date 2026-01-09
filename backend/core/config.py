@@ -10,7 +10,14 @@ class Settings:
     ALGORITHM = 'HS256'
     ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
+    CASHFREE_APP_ID = "TEST10938979069e97341b19a421fda697983901"
+    CASHFREE_SECRET_KEY = "cfsk_ma_test_6a0c2dc8064c524457518a4dd335a2d8_0047de90"
+    CASHFREE_ENV: str = "sandbox"  # or "production"
+
+    FRONTEND_BASE_URL = "https://eleganza-ten.vercel.app"
+
 settings = Settings()
+
 
 
 
