@@ -31,7 +31,7 @@ def create_payment(
     db: Session = Depends(get_db),
     current_user: Users = Depends(get_current_active_user),
 ):
-    # 1️⃣ Validate order
+    # 1️⃣ Validate order ownership
     order = (
         db.query(Orders)
         .filter(
@@ -44,12 +44,18 @@ def create_payment(
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
 
-    # 2️⃣ Create internal payment id
-    provider_payment_id = str(uuid.uuid4())
+    if payload.amount <= 0:
+        raise HTTPException(
+            status_code=400,
+            detail="Payment amount must be greater than zero",
+        )
+
+    # 2️⃣ Create Cashfree order ID
+    cashfree_order_id = str(uuid.uuid4())
 
     # 3️⃣ Create Cashfree order
     cf_payload = {
-        "order_id": provider_payment_id,
+        "order_id": cashfree_order_id,
         "order_amount": payload.amount,
         "order_currency": "INR",
         "customer_details": {
@@ -73,19 +79,19 @@ def create_payment(
         timeout=15,
     )
 
-    if response.status_code != 200:
+    if response.status_code not in (200, 201):
         raise HTTPException(
             status_code=400,
-            detail="Cashfree order creation failed",
+            detail=f"Cashfree order creation failed: {response.text}",
         )
 
     cf_data = response.json()
 
-    # 4️⃣ Save payment (pending)
+    # 4️⃣ Save payment
     payment = Payment(
         order_id=order.id,
         provider="cashfree",
-        provider_payment_id=provider_payment_id,
+        provider_payment_id=cashfree_order_id,
         amount=payload.amount,
         currency="INR",
         status="pending",
@@ -219,4 +225,5 @@ async def cashfree_webhook(
 
     db.commit()
     return {"message": "Webhook processed"}
+
 
