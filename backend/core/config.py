@@ -15,11 +15,16 @@ class Settings:
     CASHFREE_ENV: str = "sandbox"  # or "production"
     CASHFREE_CLIENT_ID = CASHFREE_APP_ID
     CASHFREE_CLIENT_SECRET = CASHFREE_SECRET_KEY
-
+    CASHFREE_ORDER_URL = (
+        "https://sandbox.cashfree.com/pg/orders"
+        if CASHFREE_ENV == "sandbox"
+        else "https://api.cashfree.com/pg/orders"
+    )
 
     FRONTEND_BASE_URL = "https://eleganza-ten.vercel.app"
 
 settings = Settings()
+
 
 
 
