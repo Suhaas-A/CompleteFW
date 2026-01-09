@@ -166,7 +166,7 @@ export default function Checkout() {
     try {
       /* CREATE ORDER */
       const orderRes = await createOrder({
-        delivery_address: fullAddress,
+        deliver_address: fullAddress,
         products: productsPayload,
         delivery_link:
           paymentMethod === "online" ? "pending" : "cod",
@@ -378,3 +378,4 @@ export default function Checkout() {
     </div>
   );
 }
+
