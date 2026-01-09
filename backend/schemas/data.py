@@ -233,6 +233,7 @@ class PaymentIntentCreate(BaseModel):
     amount: float
     currency: str = "INR"
     provider: str = "cashfree"
+    customer_phone: str
 
 
 class PaymentConfirm(BaseModel):
@@ -311,6 +312,7 @@ class OrderStatusTimelineOut(BaseModel):
 
     class Config:
         orm_mode = True
+
 
 
 
