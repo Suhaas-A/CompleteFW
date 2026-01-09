@@ -61,7 +61,7 @@ class Register(BaseModel):
 
 class Order(BaseModel):
     """Schema for placing orders."""
-    deliver_address: str
+    delivery_address: str
     products: List[List[int]]  # [[product_id, quantity]]
     delivery_link: Optional[str] = None
     status: Optional[str] = "Pending"
@@ -311,4 +311,5 @@ class OrderStatusTimelineOut(BaseModel):
 
     class Config:
         orm_mode = True
+
 
