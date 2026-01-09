@@ -173,7 +173,8 @@ export default function Checkout() {
         status: "Pending",
       });
 
-      const orderId = orderRes.data.id;
+      const orderId = orderRes.data.order_id;
+;
 
       /* COD */
       if (paymentMethod === "cod") {
@@ -378,4 +379,5 @@ export default function Checkout() {
     </div>
   );
 }
+
 
