@@ -189,6 +189,7 @@ export default function Checkout() {
         {
           order_id: orderId,
           amount: finalAmount,
+          customer_phone: phone,
         }
       );
 
@@ -391,6 +392,7 @@ export default function Checkout() {
     </div>
   );
 }
+
 
 
 
