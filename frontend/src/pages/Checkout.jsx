@@ -200,11 +200,23 @@ export default function Checkout() {
         return;
       }
 
-      const cashfree = new window.Cashfree();
+      const cashfree = new window.Cashfree({
+        mode: "sandbox",
+      });
+      
       cashfree.checkout({
         paymentSessionId: payment_session_id,
-        redirectTarget: "_self",
+      }).then((result) => {
+        if (result.error) {
+          alert("Payment failed or cancelled");
+          setLoading(false);
+        }
+      
+        if (result.paymentDetails) {
+          navigate("/orders");
+        }
       });
+
 
     } catch (err) {
       console.error(err);
@@ -379,5 +391,6 @@ export default function Checkout() {
     </div>
   );
 }
+
 
 
