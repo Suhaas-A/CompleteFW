@@ -61,7 +61,7 @@ def create_payment(
         "customer_details": {
             "customer_id": str(current_user.id),
             "customer_email": current_user.email,
-            "customer_phone": current_user.phone_number or "9999999999",
+            "customer_phone": payload.customer_phone,
         },
     }
 
@@ -225,5 +225,6 @@ async def cashfree_webhook(
 
     db.commit()
     return {"message": "Webhook processed"}
+
 
 
