@@ -247,7 +247,7 @@ export default function Checkout() {
          - Online orders start as "Payment Pending"
       ==================================================== */
       const orderRes = await createOrder({
-        delivery_address: fullAddress,
+        deliver_address: fullAddress,
         products: productsPayload,
         delivery_link: paymentMethod === "online" ? "pending" : "cod",
         status: paymentMethod === "online"
@@ -491,3 +491,4 @@ export default function Checkout() {
     </div>
   );
 }
+
