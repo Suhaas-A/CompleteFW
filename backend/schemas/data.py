@@ -64,8 +64,8 @@ class Order(BaseModel):
     deliver_address: str
     products: List[List[int]]  # [[product_id, quantity]]
     delivery_link: Optional[str] = None
-    status: Optional[str] = "Pending",
-    total_amount: int,
+    total_amount: int
+    status: Optional[str] = "Pending"
 
     class Config:
         orm_mode = True
@@ -313,6 +313,7 @@ class OrderStatusTimelineOut(BaseModel):
 
     class Config:
         orm_mode = True
+
 
 
 
