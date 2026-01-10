@@ -1,3 +1,5 @@
+# backend/routers/admin_reports.py
+
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from sqlalchemy import func
@@ -13,48 +15,40 @@ router = APIRouter(prefix="/admin", tags=["admin"])
 @router.get("/sales-summary")
 def sales_summary(
     db: Session = Depends(get_db),
-    _=Depends(admin_required),
+    _=Depends(admin_required)
 ) -> Dict:
     """
-    SALES SUMMARY (NET REVENUE)
+    ADMIN SALES SUMMARY
 
-    Rules:
-    - EXCLUDE:
-        - Pending
-        - Payment Pending
-    - INCLUDE:
-        - Paid
-        - Delivered
-        - Shipped
-        - Any completed status
-    - Revenue comes ONLY from orders.total_amount
-      (already includes discounts & coupons)
+    Counts orders that are:
+    - Pending (COD)
+    - Payment Pending (Online)
+
+    Revenue is based on orders.total_amount
+    (already includes discounts & coupons)
     """
 
-    # -----------------------------
-    # VALID REVENUE STATUSES
-    # -----------------------------
-    EXCLUDED_STATUSES = ["Pending", "Payment Pending"]
+    VALID_STATUSES = ["Pending", "Payment Pending"]
 
-    # -----------------------------
-    # TOTAL REVENUE (NET)
-    # -----------------------------
+    # --------------------------------------------------
+    # TOTAL REVENUE (coupon & discount safe)
+    # --------------------------------------------------
     total_revenue = (
         db.query(func.coalesce(func.sum(Orders.total_amount), 0))
-        .filter(~Orders.status.in_(EXCLUDED_STATUSES))
+        .filter(Orders.status.in_(VALID_STATUSES))
         .scalar()
     )
 
-    # -----------------------------
-    # TOP PRODUCTS (QUANTITY SOLD)
-    # -----------------------------
+    # --------------------------------------------------
+    # TOP PRODUCTS (quantity sold)
+    # --------------------------------------------------
     results = (
         db.query(
             ProductOrder.product_id,
-            func.sum(ProductOrder.quantity).label("quantity_sold"),
+            func.sum(ProductOrder.quantity).label("quantity_sold")
         )
         .join(Orders, Orders.id == ProductOrder.order_id)
-        .filter(~Orders.status.in_(EXCLUDED_STATUSES))
+        .filter(Orders.status.in_(VALID_STATUSES))
         .group_by(ProductOrder.product_id)
         .order_by(func.sum(ProductOrder.quantity).desc())
         .limit(20)
