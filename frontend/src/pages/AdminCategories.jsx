@@ -1,6 +1,5 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
-/* ===================== API ===================== */
 import {
   addCategory,
   addSize,
@@ -12,16 +11,7 @@ import {
   addPack,
 } from "../api/adminApi";
 
-import axiosInstance from "../api/axiosInstance";
-
-/* ====================================================
-   ADMIN CATEGORIES COMPONENT
-==================================================== */
 export default function AdminCategories() {
-
-  /* ====================================================
-     INPUT STATE
-  ==================================================== */
   const [inputs, setInputs] = useState({
     category: "",
     color: "",
@@ -36,23 +26,12 @@ export default function AdminCategories() {
     couponOffer: "",
   });
 
-  /* ====================================================
-     STATUS + DATA
-  ==================================================== */
   const [msg, setMsg] = useState("");
-  const [categories, setCategories] = useState([]);
-  const [loadingCategories, setLoadingCategories] = useState(false);
 
-  /* ====================================================
-     INPUT HANDLER
-  ==================================================== */
   const handleChange = (key, value) => {
     setInputs((prev) => ({ ...prev, [key]: value }));
   };
 
-  /* ====================================================
-     ADD HANDLER (GENERIC)
-  ==================================================== */
   const handleAdd = async (fn, ...args) => {
     try {
       await fn(...args);
@@ -65,75 +44,16 @@ export default function AdminCategories() {
           Object.keys(prev).map((k) => [k, ""])
         )
       );
-
-      fetchCategories();
-    } catch (err) {
-      console.error(err);
+    } catch {
       setMsg("❌ Failed to Add");
       setTimeout(() => setMsg(""), 2500);
     }
   };
 
-  /* ====================================================
-     FETCH CATEGORIES
-  ==================================================== */
-  const fetchCategories = async () => {
-    setLoadingCategories(true);
-    try {
-      const res = await axiosInstance.get("/api/categories");
-      setCategories(res.data || []);
-    } catch (err) {
-      console.error(err);
-      setCategories([]);
-    } finally {
-      setLoadingCategories(false);
-    }
-  };
-
-  /* ====================================================
-     DELETE CATEGORY
-  ==================================================== */
-  const handleDeleteCategory = async (categoryId) => {
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete this category?\nThis action cannot be undone."
-    );
-
-    if (!confirmDelete) return;
-
-    try {
-      await axiosInstance.delete(
-        `/api/delete_category/${categoryId}`
-      );
-
-      setMsg("🗑️ Category deleted successfully");
-      setTimeout(() => setMsg(""), 2500);
-
-      fetchCategories();
-    } catch (err) {
-      console.error(err);
-      alert(
-        err?.response?.data?.detail ||
-          "Failed to delete category"
-      );
-    }
-  };
-
-  /* ====================================================
-     INITIAL LOAD
-  ==================================================== */
-  useEffect(() => {
-    fetchCategories();
-  }, []);
-
-  /* ====================================================
-     UI
-  ==================================================== */
   return (
     <div className="min-h-screen bg-[#0F1012] text-white px-6 py-12">
 
-      {/* ====================================================
-          HEADER
-      ==================================================== */}
+      {/* HEADER */}
       <div className="mb-12">
         <h1 className="text-4xl font-bold text-[#D4AF37]">
           Manage Product Metadata
@@ -143,193 +63,209 @@ export default function AdminCategories() {
         </p>
       </div>
 
-      {/* ====================================================
-          GRID – ADD FORMS
-      ==================================================== */}
+      {/* GRID */}
       <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
 
-        {/* CATEGORY */}
-        <div className="bg-[#14161A] border border-[#262626] rounded-3xl p-6 shadow-xl">
-          <h3 className="text-lg font-semibold text-[#D4AF37] mb-4">
-            Add Category
-          </h3>
-
-          <input
-            value={inputs.category}
-            onChange={(e) =>
-              handleChange("category", e.target.value)
-            }
-            placeholder="Eg. Jackets"
-            className="w-full bg-[#0F1012] border border-[#262626]
-                       rounded-xl px-4 py-3 mb-5"
-          />
-
-          <button
-            onClick={() =>
-              handleAdd(addCategory, inputs.category)
-            }
-            className="w-full bg-gradient-to-r from-[#D4AF37] to-[#B8962E]
-                       text-black py-3 rounded-full font-semibold"
+        {/* SIMPLE INPUT CARDS */}
+        {[
+          {
+            title: "Add Category",
+            key: "category",
+            placeholder: "Eg. Jackets",
+            fn: addCategory,
+          },
+          {
+            title: "Add Color",
+            key: "color",
+            placeholder: "Eg. Black",
+            fn: addColor,
+          },
+          {
+            title: "Add Size",
+            key: "size",
+            placeholder: "Eg. S, M, L",
+            fn: addSize,
+          },
+          {
+            title: "Add Material",
+            key: "material",
+            placeholder: "Eg. Cotton",
+            fn: addMaterial,
+          },
+          {
+            title: "Add Pattern",
+            key: "pattern",
+            placeholder: "Eg. Checked",
+            fn: addPattern,
+          },
+        ].map((item, i) => (
+          <div
+            key={i}
+            className="bg-[#14161A] border border-[#262626] rounded-3xl p-6 shadow-xl
+                       hover:-translate-y-1 transition"
           >
-            Add Category
-          </button>
-        </div>
+            <h3 className="text-lg font-semibold text-[#D4AF37] mb-4">
+              {item.title}
+            </h3>
 
-        {/* COLOR */}
-        <div className="bg-[#14161A] border border-[#262626] rounded-3xl p-6 shadow-xl">
-          <h3 className="text-lg font-semibold text-[#D4AF37] mb-4">
-            Add Color
-          </h3>
+            <input
+              value={inputs[item.key]}
+              onChange={(e) =>
+                handleChange(item.key, e.target.value)
+              }
+              placeholder={item.placeholder}
+              className="w-full bg-[#0F1012] border border-[#262626]
+                         rounded-xl px-4 py-3 mb-5
+                         focus:outline-none focus:border-[#D4AF37]"
+            />
 
-          <input
-            value={inputs.color}
-            onChange={(e) =>
-              handleChange("color", e.target.value)
-            }
-            placeholder="Eg. Black"
-            className="w-full bg-[#0F1012] border border-[#262626]
-                       rounded-xl px-4 py-3 mb-5"
-          />
-
-          <button
-            onClick={() =>
-              handleAdd(addColor, inputs.color)
-            }
-            className="w-full bg-gradient-to-r from-[#D4AF37] to-[#B8962E]
-                       text-black py-3 rounded-full font-semibold"
-          >
-            Add Color
-          </button>
-        </div>
-
-        {/* SIZE */}
-        <div className="bg-[#14161A] border border-[#262626] rounded-3xl p-6 shadow-xl">
-          <h3 className="text-lg font-semibold text-[#D4AF37] mb-4">
-            Add Size
-          </h3>
-
-          <input
-            value={inputs.size}
-            onChange={(e) =>
-              handleChange("size", e.target.value)
-            }
-            placeholder="Eg. S, M, L"
-            className="w-full bg-[#0F1012] border border-[#262626]
-                       rounded-xl px-4 py-3 mb-5"
-          />
-
-          <button
-            onClick={() =>
-              handleAdd(addSize, inputs.size)
-            }
-            className="w-full bg-gradient-to-r from-[#D4AF37] to-[#B8962E]
-                       text-black py-3 rounded-full font-semibold"
-          >
-            Add Size
-          </button>
-        </div>
-
-        {/* MATERIAL */}
-        <div className="bg-[#14161A] border border-[#262626] rounded-3xl p-6 shadow-xl">
-          <h3 className="text-lg font-semibold text-[#D4AF37] mb-4">
-            Add Material
-          </h3>
-
-          <input
-            value={inputs.material}
-            onChange={(e) =>
-              handleChange("material", e.target.value)
-            }
-            placeholder="Eg. Cotton"
-            className="w-full bg-[#0F1012] border border-[#262626]
-                       rounded-xl px-4 py-3 mb-5"
-          />
-
-          <button
-            onClick={() =>
-              handleAdd(addMaterial, inputs.material)
-            }
-            className="w-full bg-gradient-to-r from-[#D4AF37] to-[#B8962E]
-                       text-black py-3 rounded-full font-semibold"
-          >
-            Add Material
-          </button>
-        </div>
-
-        {/* PATTERN */}
-        <div className="bg-[#14161A] border border-[#262626] rounded-3xl p-6 shadow-xl">
-          <h3 className="text-lg font-semibold text-[#D4AF37] mb-4">
-            Add Pattern
-          </h3>
-
-          <input
-            value={inputs.pattern}
-            onChange={(e) =>
-              handleChange("pattern", e.target.value)
-            }
-            placeholder="Eg. Checked"
-            className="w-full bg-[#0F1012] border border-[#262626]
-                       rounded-xl px-4 py-3 mb-5"
-          />
-
-          <button
-            onClick={() =>
-              handleAdd(addPattern, inputs.pattern)
-            }
-            className="w-full bg-gradient-to-r from-[#D4AF37] to-[#B8962E]
-                       text-black py-3 rounded-full font-semibold"
-          >
-            Add Pattern
-          </button>
-        </div>
-      </div>
-
-      {/* ====================================================
-          CATEGORY LIST + DELETE
-      ==================================================== */}
-      <div className="mt-16 bg-[#14161A] border border-[#262626] rounded-3xl p-6">
-        <h3 className="text-2xl font-semibold text-[#D4AF37] mb-6">
-          Existing Categories
-        </h3>
-
-        {loadingCategories ? (
-          <p className="text-[#A1A1AA]">Loading categories...</p>
-        ) : categories.length === 0 ? (
-          <p className="text-[#A1A1AA]">No categories found.</p>
-        ) : (
-          <div className="space-y-3">
-            {categories.map((cat) => (
-              <div
-                key={cat.id}
-                className="flex justify-between items-center
-                           bg-[#0F1012] border border-[#262626]
-                           rounded-xl px-5 py-3"
-              >
-                <span>{cat.name}</span>
-
-                <button
-                  onClick={() =>
-                    handleDeleteCategory(cat.id)
-                  }
-                  className="text-red-400 text-sm font-semibold
-                             hover:text-red-300"
-                >
-                  Delete
-                </button>
-              </div>
-            ))}
+            <button
+              onClick={() =>
+                handleAdd(item.fn, inputs[item.key])
+              }
+              className="w-full bg-gradient-to-r from-[#D4AF37] to-[#B8962E]
+                         text-black py-3 rounded-full font-semibold
+                         hover:brightness-110 transition"
+            >
+              Add
+            </button>
           </div>
-        )}
+        ))}
+
+        {/* PACK */}
+        <div className="bg-[#14161A] border border-[#262626] rounded-3xl p-6 shadow-xl">
+          <h3 className="text-lg font-semibold text-[#D4AF37] mb-4">
+            Add Pack
+          </h3>
+
+          <input
+            value={inputs.packName}
+            onChange={(e) =>
+              handleChange("packName", e.target.value)
+            }
+            placeholder="Pack Name"
+            className="w-full bg-[#0F1012] border border-[#262626]
+                       rounded-xl px-4 py-3 mb-3"
+          />
+
+          <input
+            value={inputs.packNumber}
+            onChange={(e) =>
+              handleChange("packNumber", e.target.value)
+            }
+            placeholder="No. of items"
+            type="number"
+            className="w-full bg-[#0F1012] border border-[#262626]
+                       rounded-xl px-4 py-3"
+          />
+
+          <button
+            onClick={() =>
+              handleAdd(
+                addPack,
+                inputs.packName,
+                Number(inputs.packNumber)
+              )
+            }
+            className="w-full mt-5 bg-gradient-to-r from-[#D4AF37] to-[#B8962E]
+                       text-black py-3 rounded-full font-semibold
+                       hover:brightness-110 transition"
+          >
+            Add Pack
+          </button>
+        </div>
+
+        {/* DISCOUNT */}
+        <div className="bg-[#14161A] border border-[#262626] rounded-3xl p-6 shadow-xl">
+          <h3 className="text-lg font-semibold text-[#D4AF37] mb-4">
+            Add Discount
+          </h3>
+
+          <input
+            value={inputs.discountName}
+            onChange={(e) =>
+              handleChange("discountName", e.target.value)
+            }
+            placeholder="Discount Name"
+            className="w-full bg-[#0F1012] border border-[#262626]
+                       rounded-xl px-4 py-3 mb-3"
+          />
+
+          <input
+            value={inputs.discountProp}
+            onChange={(e) =>
+              handleChange("discountProp", e.target.value)
+            }
+            placeholder="Discount %"
+            className="w-full bg-[#0F1012] border border-[#262626]
+                       rounded-xl px-4 py-3"
+          />
+
+          <button
+            onClick={() =>
+              handleAdd(
+                addDiscount,
+                inputs.discountName,
+                inputs.discountProp
+              )
+            }
+            className="w-full mt-5 bg-gradient-to-r from-[#D4AF37] to-[#B8962E]
+                       text-black py-3 rounded-full font-semibold
+                       hover:brightness-110 transition"
+          >
+            Add Discount
+          </button>
+        </div>
+
+        {/* COUPON */}
+        <div className="bg-[#14161A] border border-[#262626] rounded-3xl p-6 shadow-xl">
+          <h3 className="text-lg font-semibold text-[#D4AF37] mb-4">
+            Add Coupon
+          </h3>
+
+          <input
+            value={inputs.couponName}
+            onChange={(e) =>
+              handleChange("couponName", e.target.value)
+            }
+            placeholder="Coupon Code"
+            className="w-full bg-[#0F1012] border border-[#262626]
+                       rounded-xl px-4 py-3 mb-3"
+          />
+
+          <input
+            value={inputs.couponOffer}
+            onChange={(e) =>
+              handleChange("couponOffer", e.target.value)
+            }
+            placeholder="Offer %"
+            className="w-full bg-[#0F1012] border border-[#262626]
+                       rounded-xl px-4 py-3"
+          />
+
+          <button
+            onClick={() =>
+              handleAdd(
+                addCoupon,
+                inputs.couponName,
+                inputs.couponOffer
+              )
+            }
+            className="w-full mt-5 bg-gradient-to-r from-[#D4AF37] to-[#B8962E]
+                       text-black py-3 rounded-full font-semibold
+                       hover:brightness-110 transition"
+          >
+            Add Coupon
+          </button>
+        </div>
       </div>
 
-      {/* ====================================================
-          STATUS MESSAGE
-      ==================================================== */}
+      {/* STATUS MESSAGE */}
       {msg && (
         <div
           className={`mt-10 text-center py-3 rounded-xl text-sm font-semibold
             ${
-              msg.includes("✅") || msg.includes("🗑️")
+              msg.includes("✅")
                 ? "bg-green-500/20 text-green-400"
                 : "bg-red-500/20 text-red-400"
             }`}
