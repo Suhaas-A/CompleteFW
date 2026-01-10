@@ -13,29 +13,48 @@ router = APIRouter(prefix="/admin", tags=["admin"])
 @router.get("/sales-summary")
 def sales_summary(
     db: Session = Depends(get_db),
-    _=Depends(admin_required)
+    _=Depends(admin_required),
 ) -> Dict:
     """
-    Returns:
-    - total_revenue: sum of final paid order amounts (after discounts & coupons)
-    - top_products: quantity sold per product (paid orders only)
+    SALES SUMMARY (NET REVENUE)
+
+    Rules:
+    - EXCLUDE:
+        - Pending
+        - Payment Pending
+    - INCLUDE:
+        - Paid
+        - Delivered
+        - Shipped
+        - Any completed status
+    - Revenue comes ONLY from orders.total_amount
+      (already includes discounts & coupons)
     """
 
-    # ✅ TOTAL REVENUE (authoritative)
+    # -----------------------------
+    # VALID REVENUE STATUSES
+    # -----------------------------
+    EXCLUDED_STATUSES = ["Pending", "Payment Pending"]
+
+    # -----------------------------
+    # TOTAL REVENUE (NET)
+    # -----------------------------
     total_revenue = (
         db.query(func.coalesce(func.sum(Orders.total_amount), 0))
-        .filter(Orders.status == "Paid")
+        .filter(~Orders.status.in_(EXCLUDED_STATUSES))
         .scalar()
     )
 
-    # ✅ TOP PRODUCTS (quantity sold from paid orders only)
+    # -----------------------------
+    # TOP PRODUCTS (QUANTITY SOLD)
+    # -----------------------------
     results = (
         db.query(
             ProductOrder.product_id,
-            func.sum(ProductOrder.quantity).label("quantity_sold")
+            func.sum(ProductOrder.quantity).label("quantity_sold"),
         )
         .join(Orders, Orders.id == ProductOrder.order_id)
-        .filter(Orders.status == "Paid")
+        .filter(~Orders.status.in_(EXCLUDED_STATUSES))
         .group_by(ProductOrder.product_id)
         .order_by(func.sum(ProductOrder.quantity).desc())
         .limit(20)
