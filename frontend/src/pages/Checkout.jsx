@@ -170,6 +170,7 @@ export default function Checkout() {
         products,
         delivery_link: paymentMethod === "online" ? "pending" : "cod",
         status: paymentMethod === "online" ? "Payment Pending" : "Pending",
+        total_amount=order.total_amount,
       });
 
       const orderId = orderRes.data.order_id;
@@ -391,6 +392,7 @@ export default function Checkout() {
     </div>
   );
 }
+
 
 
 
