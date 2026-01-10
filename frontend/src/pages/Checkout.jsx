@@ -1,3 +1,19 @@
+/**********************************************************************
+ * CHECKOUT PAGE
+ * --------------------------------------------------------------------
+ * Handles:
+ *  - Address collection
+ *  - Coupon application
+ *  - Discount calculation
+ *  - Order creation
+ *  - Cashfree payment
+ *
+ * IMPORTANT:
+ *  - Order is created FIRST
+ *  - Online orders start as "Payment Pending"
+ *  - total_amount is FINAL (coupon-adjusted)
+ *********************************************************************/
+
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -14,79 +30,125 @@ import { getAllProducts } from "../api/productApi";
    CHECKOUT COMPONENT
 ==================================================== */
 export default function Checkout() {
-  /* ===================== ROUTER ===================== */
-  const navigate = useNavigate();
 
-  /* ===================== THEME ===================== */
+  /* ====================================================
+     ROUTING + THEME
+  ==================================================== */
+  const navigate = useNavigate();
   const { dark } = useTheme();
 
-  /* ===================== CART ===================== */
+  /* ====================================================
+     CART CONTEXT
+  ==================================================== */
   const {
     cartItems,
     clearCart,
   } = useCartContext();
 
-  /* ===================== ADDRESS STATE ===================== */
+  /* ====================================================
+     ADDRESS STATE
+  ==================================================== */
   const [phone, setPhone] = useState("");
   const [address1, setAddress1] = useState("");
   const [address2, setAddress2] = useState("");
   const [address3, setAddress3] = useState("");
 
-  /* ===================== PAYMENT ===================== */
+  /* ====================================================
+     PAYMENT STATE
+  ==================================================== */
   const [paymentMethod, setPaymentMethod] = useState("cod");
   const [loading, setLoading] = useState(false);
 
-  /* ===================== DATA ===================== */
-  const [discounts, setDiscounts] = useState([]);
+  /* ====================================================
+     PRODUCT / DISCOUNT DATA
+  ==================================================== */
   const [products, setProducts] = useState([]);
+  const [discounts, setDiscounts] = useState([]);
 
-  /* ===================== COUPONS ===================== */
+  /* ====================================================
+     COUPON STATE
+  ==================================================== */
   const [couponList, setCouponList] = useState([]);
   const [couponCode, setCouponCode] = useState("");
   const [couponApplied, setCouponApplied] = useState(null);
   const [couponError, setCouponError] = useState("");
 
   /* ====================================================
-     FETCH PRODUCTS + DISCOUNTS + COUPONS
-     (SAME LOGIC AS CART — GUARANTEED MATCH)
+     FETCH PRODUCTS, DISCOUNTS, COUPONS
   ==================================================== */
   useEffect(() => {
-    getAllProducts()
-      .then((res) => setProducts(res.data || []))
-      .catch(() => setProducts([]));
 
+    /* ---------- PRODUCTS ---------- */
+    getAllProducts()
+      .then((res) => {
+        setProducts(res.data || []);
+      })
+      .catch(() => {
+        setProducts([]);
+      });
+
+    /* ---------- DISCOUNTS ---------- */
     axiosInstance
       .get("/discounts")
-      .then((res) => setDiscounts(res.data || []))
-      .catch(() => setDiscounts([]));
+      .then((res) => {
+        setDiscounts(res.data || []);
+      })
+      .catch(() => {
+        setDiscounts([]);
+      });
 
+    /* ---------- COUPONS ---------- */
     axiosInstance
       .get("/coupons")
-      .then((res) => setCouponList(res.data || []))
-      .catch(() => setCouponList([]));
+      .then((res) => {
+        setCouponList(res.data || []);
+      })
+      .catch(() => {
+        setCouponList([]);
+      });
+
   }, []);
 
   /* ====================================================
      ENRICH CART ITEMS WITH FULL PRODUCT DATA
   ==================================================== */
   const enrichedCart = useMemo(() => {
+
     return cartItems.map((item) => {
-      const full = products.find((p) => p.id === item.id);
-      return full ? { ...item, ...full } : item;
+
+      const fullProduct = products.find(
+        (p) => p.id === item.id
+      );
+
+      if (fullProduct) {
+        return {
+          ...item,
+          ...fullProduct,
+        };
+      }
+
+      return item;
     });
+
   }, [cartItems, products]);
 
   /* ====================================================
-     PRODUCT DISCOUNT CALCULATION
+     ITEM FINAL PRICE (PRODUCT DISCOUNT)
   ==================================================== */
   const getItemFinalPrice = (item) => {
-    if (!item.discount_id) return item.price;
+
+    // No discount applied
+    if (!item.discount_id) {
+      return item.price;
+    }
 
     const discount = discounts.find(
       (d) => d.id === item.discount_id
     );
 
-    if (!discount) return item.price;
+    if (!discount) {
+      return item.price;
+    }
 
     const discounted =
       item.price - (discount.prop / 100) * item.price;
@@ -95,19 +157,29 @@ export default function Checkout() {
   };
 
   /* ====================================================
-     CART TOTAL (DISCOUNT-AWARE)
+     CART SUBTOTAL (DISCOUNT-AWARE)
   ==================================================== */
   const cartSubtotal = useMemo(() => {
-    return enrichedCart.reduce((sum, item) => {
-      return sum + getItemFinalPrice(item) * item.quantity;
-    }, 0);
+
+    let sum = 0;
+
+    for (const item of enrichedCart) {
+      const price = getItemFinalPrice(item);
+      sum += price * item.quantity;
+    }
+
+    return sum;
+
   }, [enrichedCart, discounts]);
 
   /* ====================================================
      APPLY COUPON
   ==================================================== */
   const applyCoupon = () => {
-    if (!couponCode.trim()) return;
+
+    if (!couponCode.trim()) {
+      return;
+    }
 
     const found = couponList.find(
       (c) => c.name.toLowerCase() === couponCode.toLowerCase()
@@ -124,7 +196,7 @@ export default function Checkout() {
   };
 
   /* ====================================================
-     FINAL TOTAL (PRODUCT DISCOUNT + COUPON)
+     FINAL TOTAL (COUPON APPLIED)
   ==================================================== */
   const couponPercent = couponApplied?.offer || 0;
   const couponDiscount = Math.round(
@@ -133,9 +205,11 @@ export default function Checkout() {
   const finalAmount = cartSubtotal - couponDiscount;
 
   /* ====================================================
-     PLACE ORDER
+     PLACE ORDER HANDLER
   ==================================================== */
   const handlePlaceOrder = async () => {
+
+    /* ---------- BASIC VALIDATION ---------- */
     if (!phone || !address1) {
       alert("Phone number and address are required");
       return;
@@ -148,6 +222,7 @@ export default function Checkout() {
 
     setLoading(true);
 
+    /* ---------- FULL ADDRESS ---------- */
     const fullAddress = [
       `Phone: ${phone}`,
       address1,
@@ -158,32 +233,43 @@ export default function Checkout() {
       .filter(Boolean)
       .join("\n");
 
+    /* ---------- PRODUCTS PAYLOAD ---------- */
     const productsPayload = enrichedCart.map((item) => [
       item.id,
       item.quantity,
     ]);
 
     try {
-      /* CREATE ORDER */
+
+      /* ====================================================
+         CREATE ORDER (IMPORTANT)
+         - Order is created BEFORE payment
+         - Online orders start as "Payment Pending"
+      ==================================================== */
       const orderRes = await createOrder({
         delivery_address: fullAddress,
-        products,
+        products: productsPayload,
         delivery_link: paymentMethod === "online" ? "pending" : "cod",
-        status: paymentMethod === "online" ? "Payment Pending" : "Pending",
+        status: paymentMethod === "online"
+          ? "Payment Pending"
+          : "Pending",
         total_amount: finalAmount,
       });
 
       const orderId = orderRes.data.order_id;
-;
 
-      /* COD */
+      /* ====================================================
+         CASH ON DELIVERY
+      ==================================================== */
       if (paymentMethod === "cod") {
         clearCart();
         navigate("/orders");
         return;
       }
 
-      /* ONLINE PAYMENT */
+      /* ====================================================
+         ONLINE PAYMENT (CASHFREE)
+      ==================================================== */
       const paymentRes = await axiosInstance.post(
         "/payments/create",
         {
@@ -204,20 +290,24 @@ export default function Checkout() {
       const cashfree = new window.Cashfree({
         mode: "sandbox",
       });
-      
-      cashfree.checkout({
-        paymentSessionId: payment_session_id,
-      }).then((result) => {
-        if (result.error) {
-          alert("Payment failed or cancelled");
-          setLoading(false);
-        }
-      
-        if (result.paymentDetails) {
-          navigate("/orders");
-        }
-      });
 
+      cashfree
+        .checkout({
+          paymentSessionId: payment_session_id,
+        })
+        .then((result) => {
+
+          if (result?.error) {
+            alert("Payment failed or cancelled");
+            setLoading(false);
+            return;
+          }
+
+          if (result?.paymentDetails) {
+            clearCart();
+            navigate("/orders");
+          }
+        });
 
     } catch (err) {
       console.error(err);
@@ -237,13 +327,18 @@ export default function Checkout() {
     >
       <div className="max-w-6xl mx-auto">
 
+        {/* ====================================================
+            HEADER
+        ==================================================== */}
         <h1 className="text-4xl font-bold text-[#D4AF37] mb-10 text-center">
           Checkout
         </h1>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
 
-          {/* LEFT */}
+          {/* ====================================================
+              LEFT COLUMN
+          ==================================================== */}
           <div className="lg:col-span-2 space-y-8">
 
             {/* ADDRESS */}
@@ -258,18 +353,21 @@ export default function Checkout() {
                 onChange={(e) => setPhone(e.target.value)}
                 className="w-full p-4 rounded-xl bg-[#0F1012] border border-[#262626]"
               />
+
               <input
                 placeholder="Address Line 1"
                 value={address1}
                 onChange={(e) => setAddress1(e.target.value)}
                 className="w-full p-4 rounded-xl bg-[#0F1012] border border-[#262626]"
               />
+
               <input
                 placeholder="Address Line 2"
                 value={address2}
                 onChange={(e) => setAddress2(e.target.value)}
                 className="w-full p-4 rounded-xl bg-[#0F1012] border border-[#262626]"
               />
+
               <input
                 placeholder="Address Line 3"
                 value={address3}
@@ -278,7 +376,7 @@ export default function Checkout() {
               />
             </div>
 
-            {/* PAYMENT */}
+            {/* PAYMENT METHOD */}
             <div className="bg-[#14161A] border border-[#262626] rounded-3xl p-6">
               <h2 className="text-xl font-semibold mb-4">
                 Payment Method
@@ -304,8 +402,11 @@ export default function Checkout() {
             </div>
           </div>
 
-          {/* RIGHT */}
+          {/* ====================================================
+              RIGHT COLUMN
+          ==================================================== */}
           <div className="bg-[#14161A] border border-[#262626] rounded-3xl p-6 h-fit space-y-4">
+
             <h2 className="text-xl font-semibold">
               Order Summary
             </h2>
@@ -343,8 +444,7 @@ export default function Checkout() {
 
               {couponApplied && (
                 <p className="text-green-500 text-sm mt-2">
-                  Applied {couponApplied.name} (
-                  {couponApplied.offer}% OFF)
+                  Applied {couponApplied.name} ({couponApplied.offer}% OFF)
                 </p>
               )}
 
@@ -385,18 +485,9 @@ export default function Checkout() {
             >
               {loading ? "Processing..." : "Place Order"}
             </button>
-
           </div>
         </div>
       </div>
     </div>
   );
 }
-
-
-
-
-
-
-
-
