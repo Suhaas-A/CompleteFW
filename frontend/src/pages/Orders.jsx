@@ -17,9 +17,14 @@ export default function Orders() {
       .finally(() => setLoading(false));
   }, []);
 
+  // ✅ FILTER OUT "Payment Pending" ORDERS
+  const visibleOrders = orders.filter(
+    (order) => order.status?.toLowerCase() !== "payment pending"
+  );
+
   if (loading) return <Loader />;
 
-  if (!orders.length)
+  if (!visibleOrders.length)
     return (
       <div
         className={`min-h-screen flex flex-col items-center justify-center ${
@@ -34,7 +39,7 @@ export default function Orders() {
           No Orders Yet
         </h2>
         <p className="text-sm text-center max-w-md">
-          Your Eleganza orders will appear here once you make a purchase.
+          Your Eleganza orders will appear here once you complete a purchase.
         </p>
       </div>
     );
@@ -55,7 +60,7 @@ export default function Orders() {
         </h2>
 
         <div className="space-y-8">
-          {orders.map((order) => {
+          {visibleOrders.map((order) => {
             const currentIndex = timelineStages.indexOf(order.status);
 
             return (
