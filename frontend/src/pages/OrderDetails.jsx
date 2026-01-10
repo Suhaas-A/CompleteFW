@@ -220,7 +220,7 @@ export default function OrderDetails() {
               Total Amount
             </p>
             <p className="text-2xl font-bold text-[#D4AF37] mt-1">
-              ₹{total.toLocaleString()}
+              ₹{order.total_amount.toLocaleString()}
             </p>
           </div>
         </div>
@@ -239,3 +239,4 @@ export default function OrderDetails() {
     </div>
   );
 }
+
