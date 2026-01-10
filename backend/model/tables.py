@@ -188,6 +188,7 @@ class Orders(Base):
     status = Column(String(64), nullable=False, default="Pending")  # keep original
     delivery_link = Column(String(1024))
     created_at = Column(DateTime, default=datetime.utcnow)
+    total_amount = Column(Float)
 
     user = relationship("Users", back_populates="orders")
     items = relationship("ProductOrder", back_populates="order", cascade="all,delete-orphan")
@@ -314,3 +315,4 @@ class RefreshToken(Base):
     revoked = Column(Boolean, default=False)
 
     user = relationship("Users", back_populates="refresh_tokens")
+
