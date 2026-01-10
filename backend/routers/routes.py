@@ -301,6 +301,7 @@ def create_order(order: data.Order, db: Session = Depends(get_db), current_user=
         user_id=current_user.id,
         delivery_address=order.deliver_address,
         status="Pending",
+        total_amount=order.total_amount,
         delivery_link=order.delivery_link or "N/A",
     )
     db.add(new_order)
@@ -475,5 +476,6 @@ def admin_get_all_orders(
         })
 
     return result
+
 
 
