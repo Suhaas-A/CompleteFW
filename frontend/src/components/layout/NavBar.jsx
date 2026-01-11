@@ -46,7 +46,7 @@ export default function Navbar() {
             to="/admin"
             className="text-3xl font-serif font-bold tracking-wide text-[#D4AF37] hover:opacity-90 transition"
           >
-            Eleganza Admin
+            ELEGANZA Admin
           </Link>
 
           {/* Admin Links */}
@@ -134,7 +134,7 @@ export default function Navbar() {
           to="/"
           className="text-3xl font-serif font-bold tracking-wide text-[#D4AF37] hover:opacity-90 transition"
         >
-          Eleganza
+          ElEGANZA
         </Link>
 
         {/* Search */}
@@ -268,4 +268,5 @@ export default function Navbar() {
     </nav>
   );
 }
+
 
