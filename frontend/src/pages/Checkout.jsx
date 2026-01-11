@@ -430,6 +430,37 @@ export default function Checkout() {
               </div>
             ))}
 
+            {/* ============================ COUPON ============================ */}
+            <div className="pt-4 border-t space-y-2">
+              <div className="flex gap-2">
+                <input
+                  className={`flex-1 p-2 rounded border ${inputBg}`}
+                  placeholder="Coupon Code"
+                  value={couponCode}
+                  onChange={(e) => setCouponCode(e.target.value)}
+                />
+            
+                <button
+                  onClick={applyCoupon}
+                  className="px-4 bg-[#D4AF37] text-black rounded font-semibold"
+                >
+                  Apply
+                </button>
+              </div>
+            
+              {couponApplied && (
+                <p className="text-green-500 text-sm">
+                  Applied {couponApplied.name} ({couponApplied.offer}% OFF)
+                </p>
+              )}
+            
+              {couponError && (
+                <p className="text-red-500 text-sm">
+                  {couponError}
+                </p>
+              )}
+            </div>
+             
             {/* TOTAL */}
             <div className="border-t pt-4 space-y-1 text-sm">
               <div className="flex justify-between">
@@ -467,3 +498,4 @@ export default function Checkout() {
     </div>
   );
 }
+
