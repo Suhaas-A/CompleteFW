@@ -134,7 +134,7 @@ export default function Navbar() {
           to="/"
           className="text-3xl font-serif font-bold tracking-wide text-[#D4AF37] hover:opacity-90 transition"
         >
-          ElEGANZA
+          ELEGANZA
         </Link>
 
         {/* Search */}
@@ -268,5 +268,6 @@ export default function Navbar() {
     </nav>
   );
 }
+
 
 
