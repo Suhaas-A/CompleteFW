@@ -1,7 +1,11 @@
 import { useState } from "react";
 import { sendResetOtp, resetPassword } from "../api/authApi";
+import { useTheme } from "../contexts/ThemeContext";
+import { Link } from "react-router-dom";
 
 export default function ForgotPassword() {
+  const { dark } = useTheme();
+
   const [step, setStep] = useState(1);
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
@@ -35,7 +39,6 @@ export default function ForgotPassword() {
 
     try {
       await resetPassword(email, otp, newPassword);
-      setMessage("Password reset successful. You can now log in.");
       setStep(3);
     } catch (err) {
       setError(err.message);
@@ -45,52 +48,72 @@ export default function ForgotPassword() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
-      <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-6">
+    <div
+      className={`min-h-screen flex items-center justify-center px-6 ${
+        dark ? "bg-[#0F1012] text-white" : "bg-gray-50 text-gray-900"
+      }`}
+    >
+      <div
+        className={`w-full max-w-md rounded-3xl border p-8 ${
+          dark
+            ? "bg-[#14161A] border-[#262626]"
+            : "bg-white border-gray-200 shadow-sm"
+        }`}
+      >
         {/* Header */}
-        <h2 className="text-2xl font-semibold text-gray-800 text-center mb-2">
-          Forgot Password
-        </h2>
-        <p className="text-sm text-gray-500 text-center mb-6">
-          {step === 1 && "Enter your email to receive an OTP"}
-          {step === 2 && "Enter the OTP and set a new password"}
-          {step === 3 && "Done 🎉"}
-        </p>
+        <div className="text-center mb-8">
+          <p className="text-sm tracking-widest text-[#D4AF37] mb-2">
+            ACCOUNT SECURITY
+          </p>
+          <h2 className="text-3xl font-extrabold">
+            Forgot Password
+          </h2>
+          <p
+            className={`mt-2 text-sm ${
+              dark ? "text-[#A1A1AA]" : "text-gray-600"
+            }`}
+          >
+            {step === 1 && "Enter your email to receive an OTP"}
+            {step === 2 && "Verify OTP and set a new password"}
+            {step === 3 && "Password updated successfully"}
+          </p>
+        </div>
 
         {/* Alerts */}
         {error && (
-          <div className="mb-4 rounded-md bg-red-50 border border-red-200 px-4 py-2 text-sm text-red-600">
+          <div className="mb-6 rounded-xl border border-red-400/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
             {error}
           </div>
         )}
 
         {message && step !== 3 && (
-          <div className="mb-4 rounded-md bg-blue-50 border border-blue-200 px-4 py-2 text-sm text-blue-600">
+          <div className="mb-6 rounded-xl border border-[#D4AF37]/30 bg-[#D4AF37]/10 px-4 py-3 text-sm text-[#D4AF37]">
             {message}
           </div>
         )}
 
         {/* STEP 1 */}
         {step === 1 && (
-          <form onSubmit={handleSendOtp} className="space-y-4">
+          <form onSubmit={handleSendOtp} className="space-y-5">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Email address
-              </label>
+              <label className="block text-sm mb-1">Email</label>
               <input
                 type="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className={`w-full rounded-xl px-4 py-3 text-sm outline-none transition ${
+                  dark
+                    ? "bg-[#0F1012] border border-[#262626] focus:border-[#D4AF37]"
+                    : "bg-white border border-gray-300 focus:border-[#D4AF37]"
+                }`}
               />
             </div>
 
             <button
-              type="submit"
               disabled={loading}
-              className="w-full rounded-md bg-indigo-600 px-4 py-2 text-white font-medium hover:bg-indigo-700 transition disabled:opacity-60"
+              className="w-full rounded-full bg-gradient-to-r from-[#D4AF37] to-[#B8962E] py-3 text-black font-semibold hover:brightness-110 transition disabled:opacity-60"
             >
               {loading ? "Sending OTP..." : "Send OTP"}
             </button>
@@ -99,39 +122,42 @@ export default function ForgotPassword() {
 
         {/* STEP 2 */}
         {step === 2 && (
-          <form onSubmit={handleResetPassword} className="space-y-4">
+          <form onSubmit={handleResetPassword} className="space-y-5">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                OTP
-              </label>
+              <label className="block text-sm mb-1">OTP</label>
               <input
                 type="text"
                 required
                 value={otp}
                 onChange={(e) => setOtp(e.target.value)}
-                placeholder="Enter 6-digit OTP"
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm tracking-widest focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                placeholder="6-digit OTP"
+                className={`w-full rounded-xl px-4 py-3 text-sm tracking-widest outline-none transition ${
+                  dark
+                    ? "bg-[#0F1012] border border-[#262626] focus:border-[#D4AF37]"
+                    : "bg-white border border-gray-300 focus:border-[#D4AF37]"
+                }`}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                New Password
-              </label>
+              <label className="block text-sm mb-1">New Password</label>
               <input
                 type="password"
                 required
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 placeholder="New password"
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className={`w-full rounded-xl px-4 py-3 text-sm outline-none transition ${
+                  dark
+                    ? "bg-[#0F1012] border border-[#262626] focus:border-[#D4AF37]"
+                    : "bg-white border border-gray-300 focus:border-[#D4AF37]"
+                }`}
               />
             </div>
 
             <button
-              type="submit"
               disabled={loading}
-              className="w-full rounded-md bg-green-600 px-4 py-2 text-white font-medium hover:bg-green-700 transition disabled:opacity-60"
+              className="w-full rounded-full bg-gradient-to-r from-[#D4AF37] to-[#B8962E] py-3 text-black font-semibold hover:brightness-110 transition disabled:opacity-60"
             >
               {loading ? "Resetting..." : "Reset Password"}
             </button>
@@ -140,19 +166,23 @@ export default function ForgotPassword() {
 
         {/* STEP 3 */}
         {step === 3 && (
-          <div className="text-center space-y-4">
-            <div className="text-green-600 text-lg font-semibold">
-              ✅ Password Reset Successful
+          <div className="text-center space-y-6">
+            <div className="text-[#D4AF37] text-xl font-semibold">
+              Password Updated 🎉
             </div>
-            <p className="text-sm text-gray-600">
+            <p
+              className={`text-sm ${
+                dark ? "text-[#A1A1AA]" : "text-gray-600"
+              }`}
+            >
               You can now log in with your new password.
             </p>
-            <a
-              href="/login"
-              className="inline-block rounded-md bg-indigo-600 px-4 py-2 text-white text-sm font-medium hover:bg-indigo-700 transition"
+            <Link
+              to="/login"
+              className="inline-block rounded-full bg-gradient-to-r from-[#D4AF37] to-[#B8962E] px-8 py-3 text-black font-semibold hover:brightness-110 transition"
             >
               Go to Login
-            </a>
+            </Link>
           </div>
         )}
       </div>
