@@ -536,14 +536,8 @@ def forgot_password(payload: data.ForgotPasswordEmail, db: Session = Depends(get
 
 
 
-@router.post("/reset-password", tags=["auth"])
+@router.post("/reset-password")
 def reset_password(payload: data.ResetPasswordWithOtp, db: Session = Depends(get_db)):
-    """
-    1. User submits email + OTP + new password
-    2. Validate OTP + expiry
-    3. Update password
-    4. Invalidate OTP
-    """
     record = OTP_STORE.get(payload.email)
 
     if (
@@ -551,10 +545,7 @@ def reset_password(payload: data.ResetPasswordWithOtp, db: Session = Depends(get
         or record["otp"] != payload.otp
         or record["expires_at"] < datetime.utcnow()
     ):
-        raise HTTPException(
-            status_code=400,
-            detail="Invalid or expired OTP"
-        )
+        raise HTTPException(status_code=400, detail="Invalid or expired OTP")
 
     user = db.query(tables.Users).filter(
         tables.Users.email == payload.email
@@ -566,10 +557,11 @@ def reset_password(payload: data.ResetPasswordWithOtp, db: Session = Depends(get
     user.password = get_password_hash(payload.new_password)
     db.commit()
 
-    # OTP can be used only once
     OTP_STORE.pop(payload.email, None)
 
-    return {"message": "Password reset successful"}
+    return {"message": "Password updated successfully"}
+
+
 
 
 
