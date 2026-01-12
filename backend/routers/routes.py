@@ -9,6 +9,14 @@ Handles:
 - Order status tracking (history/timeline)
 """
 
+# email -> { otp, expires_at }
+OTP_STORE: dict[str, dict] = {}
+import random
+
+def generate_otp() -> str:
+    return str(random.randint(100000, 999999))
+
+
 from datetime import datetime, timedelta
 from fastapi import (
     APIRouter,
@@ -476,6 +484,71 @@ def admin_get_all_orders(
         })
 
     return result
+
+@router.post("/forgot-password", tags=["auth"])
+def forgot_password(payload: data.ForgotPasswordEmail, db: Session = Depends(get_db)):
+    """
+    1. User enters email
+    2. If email exists → generate OTP
+    3. Store OTP in memory with expiry
+    4. Send OTP to email
+    """
+    user = db.query(tables.Users).filter(
+        tables.Users.email == payload.email
+    ).first()
+
+    # Do NOT reveal whether email exists
+    if not user:
+        return {"message": "If the email exists, an OTP has been sent"}
+
+    otp = generate_otp()
+
+    OTP_STORE[payload.email] = {
+        "otp": otp,
+        "expires_at": datetime.utcnow() + timedelta(minutes=10)
+    }
+
+    # Replace this with real email service
+    print(f"[PASSWORD RESET OTP] {payload.email}: {otp}")
+
+    return {"message": "If the email exists, an OTP has been sent"}
+
+
+@router.post("/reset-password", tags=["auth"])
+def reset_password(payload: data.ResetPasswordWithOtp, db: Session = Depends(get_db)):
+    """
+    1. User submits email + OTP + new password
+    2. Validate OTP + expiry
+    3. Update password
+    4. Invalidate OTP
+    """
+    record = OTP_STORE.get(payload.email)
+
+    if (
+        not record
+        or record["otp"] != payload.otp
+        or record["expires_at"] < datetime.utcnow()
+    ):
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid or expired OTP"
+        )
+
+    user = db.query(tables.Users).filter(
+        tables.Users.email == payload.email
+    ).first()
+
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    user.password = get_password_hash(payload.new_password)
+    db.commit()
+
+    # OTP can be used only once
+    OTP_STORE.pop(payload.email, None)
+
+    return {"message": "Password reset successful"}
+
 
 
 
