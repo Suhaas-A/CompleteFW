@@ -40,7 +40,7 @@ export default function App() {
             <Route path="/register" element={<Register />} />
             <Route path="/product/:id" element={<ProductDetails />} />
             <Route path="/products" element={<ViewProducts />} />
-            <Route path="/forget_password" element={<ForgotPassword />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
 
             {/* 🧍 Protected (User) Routes */}
             <Route
