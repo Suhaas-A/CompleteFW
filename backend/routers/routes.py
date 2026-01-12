@@ -485,21 +485,43 @@ def admin_get_all_orders(
 
     return result
 
-@router.post("/forgot-password", tags=["auth"])
+
+
+import smtplib
+from email.message import EmailMessage
+
+def send_otp_email(to_email: str, otp: str):
+    msg = EmailMessage()
+    msg["Subject"] = "Password Reset OTP"
+    msg["From"] = "suhaas062010@gmail.com"
+    msg["To"] = to_email
+
+    msg.set_content(f"""
+        Hello,
+        
+        Your OTP for resetting password is:
+        
+        {otp}
+        
+        This OTP is valid for 10 minutes.
+        
+        If you did not request this, ignore this email.
+    """)
+
+    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+        server.login("suhaas062010@gmail.com", "ogkl cmnc rnnq rgzj")
+        server.send_message(msg)
+
+
+@router.post("/forgot-password")
 def forgot_password(payload: data.ForgotPasswordEmail, db: Session = Depends(get_db)):
-    """
-    1. User enters email
-    2. If email exists → generate OTP
-    3. Store OTP in memory with expiry
-    4. Send OTP to email
-    """
     user = db.query(tables.Users).filter(
         tables.Users.email == payload.email
     ).first()
 
-    # Do NOT reveal whether email exists
+    # Same response to avoid email enumeration
     if not user:
-        return {"message": "If the email exists, an OTP has been sent"}
+        return {"message": "If the email exists, OTP has been sent"}
 
     otp = generate_otp()
 
@@ -508,10 +530,10 @@ def forgot_password(payload: data.ForgotPasswordEmail, db: Session = Depends(get
         "expires_at": datetime.utcnow() + timedelta(minutes=10)
     }
 
-    # Replace this with real email service
-    print(f"[PASSWORD RESET OTP] {payload.email}: {otp}")
+    send_otp_email(payload.email, otp)
 
-    return {"message": "If the email exists, an OTP has been sent"}
+    return {"message": "If the email exists, OTP has been sent"}
+
 
 
 @router.post("/reset-password", tags=["auth"])
@@ -548,6 +570,7 @@ def reset_password(payload: data.ResetPasswordWithOtp, db: Session = Depends(get
     OTP_STORE.pop(payload.email, None)
 
     return {"message": "Password reset successful"}
+
 
 
 
