@@ -18,6 +18,7 @@ import Wishlist from "./pages/WishList"
 import Profile from "./pages/Profile";
 import ViewProducts from "./pages/ViewProducts"
 import OrderDetails from "./pages/OrderDetails";
+import ForgotPassword from "./pages/ForgetPassword";
 
 // ⚙️ Admin Pages
 import AdminDashboard from "./pages/AdminDashboard";
@@ -39,6 +40,7 @@ export default function App() {
             <Route path="/register" element={<Register />} />
             <Route path="/product/:id" element={<ProductDetails />} />
             <Route path="/products" element={<ViewProducts />} />
+            <Route path="/forget_password" element={<ForgotPassword />} />
 
             {/* 🧍 Protected (User) Routes */}
             <Route
