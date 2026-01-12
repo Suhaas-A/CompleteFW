@@ -317,13 +317,14 @@ class OrderStatusTimelineOut(BaseModel):
 
 
 class ForgotPasswordEmail(BaseModel):
-    email: EmailStr
+    email: str
 
 
 class ResetPasswordWithOtp(BaseModel):
-    email: EmailStr
+    email: str
     otp: str
     new_password: str
+
 
 
 
