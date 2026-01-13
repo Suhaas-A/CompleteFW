@@ -276,8 +276,13 @@ export default function ViewProducts() {
                   </div>
 
                   <div className="p-4 h-[170px] flex flex-col justify-between">
-                    <h3 className="text-lg font-semibold truncate">
+                    <h3 className="text-lg font-semibold leading-tight">
                       {p.name}
+                      {discount && (
+                        <span className="ml-2 text-sm line-through text-gray-400">
+                          ₹{p.price}
+                        </span>
+                      )}
                     </h3>
 
                     <div>
@@ -331,3 +336,4 @@ export default function ViewProducts() {
     </div>
   );
 }
+
