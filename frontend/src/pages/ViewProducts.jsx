@@ -222,25 +222,53 @@ export default function ViewProducts() {
             <select
               value={priceFilter}
               onChange={(e) => setPriceFilter(e.target.value)}
-              className="rounded-lg px-4 py-2 text-sm border"
+              className={`rounded-lg px-4 py-2 text-sm border outline-none ${
+                dark
+                  ? "bg-[#0F1012] border-[#262626] text-white"
+                  : "bg-white border-gray-300 text-gray-900"
+              }`}
             >
-              <option value="all">Price: All</option>
-              <option value="low">Below ₹500</option>
-              <option value="mid">₹500 – ₹1000</option>
-              <option value="high">Above ₹1000</option>
+              <option value="all" className={dark ? "bg-[#0F1012] text-white" : ""}>
+                Price: All
+              </option>
+              <option value="low" className={dark ? "bg-[#0F1012] text-white" : ""}>
+                Below ₹500
+              </option>
+              <option value="mid" className={dark ? "bg-[#0F1012] text-white" : ""}>
+                ₹500 – ₹1000
+              </option>
+              <option value="high" className={dark ? "bg-[#0F1012] text-white" : ""}>
+                Above ₹1000
+              </option>
             </select>
+
 
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="rounded-lg px-4 py-2 text-sm border"
+              className={`rounded-lg px-4 py-2 text-sm border outline-none ${
+                dark
+                  ? "bg-[#0F1012] border-[#262626] text-white"
+                  : "bg-white border-gray-300 text-gray-900"
+              }`}
             >
-              <option value="none">Sort By</option>
-              <option value="price-asc">Price ↑</option>
-              <option value="price-desc">Price ↓</option>
-              <option value="name-asc">Name A–Z</option>
-              <option value="name-desc">Name Z–A</option>
+              <option value="none" className={dark ? "bg-[#0F1012] text-white" : ""}>
+                Sort By
+              </option>
+              <option value="price-asc" className={dark ? "bg-[#0F1012] text-white" : ""}>
+                Price ↑
+              </option>
+              <option value="price-desc" className={dark ? "bg-[#0F1012] text-white" : ""}>
+                Price ↓
+              </option>
+              <option value="name-asc" className={dark ? "bg-[#0F1012] text-white" : ""}>
+                Name A–Z
+              </option>
+              <option value="name-desc" className={dark ? "bg-[#0F1012] text-white" : ""}>
+                Name Z–A
+              </option>
             </select>
+
           </div>
 
           {/* GRID */}
@@ -336,4 +364,5 @@ export default function ViewProducts() {
     </div>
   );
 }
+
 
